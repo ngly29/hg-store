@@ -1,0 +1,103 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.cardRight {
+    padding: 6.5vh;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    width: 400px;
+}
+
+.cardRight .header {
+    text-align: center;
+    padding-bottom: 2vh;
+}
+
+.cardRight .inputWrapper {
+    position: relative;
+    margin-bottom: 1vh;
+}
+
+.cardRight input {
+    width: 100%;
+    padding: 1vh;
+    padding-right: 5vh;
+    box-sizing: border-box;
+    border: 1px solid black;
+    border-radius: 5px;
+    margin-top: 1vh;
+}
+
+.cardRight input:focus {
+    outline: none;
+    border: 1px solid black;
+}
+
+.cardRight .btnShowPassword {
+    position: absolute;
+    right: 1vh;
+    top: 60%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.cardRight .btnSubmit {
+    width: 100%;
+    padding: 1vh;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1vh;
+    background-color: #0099FF;
+    color: white;
+    transition: background-color 0.2s ease;
+    border: none;
+    border-radius: 5px;
+}
+
+.cardRight .btnSubmit:not(:disabled):hover {
+    background-color: #0088E6;
+    cursor: pointer;
+}
+
+.cardRight .btnSubmit:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.cardLeft {
+    background-color: #0099FF;
+    color: white;
+    border: 1px solid grey;
+    border-right: none;
+    padding: 15.5vh 1vh;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 400px;
+}
