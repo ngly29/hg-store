@@ -1,38 +1,38 @@
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 
-// Call api từ Backend
 const api = axios.create({
-    baseURL: 'http://localhost:8080/api/v1', //process.env.NEXT_PUBLIC_API_URL ||
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1',
     headers: {
         'Content-Type': 'application/json',
-    }
+    },
 });
-// Đăng ký request interceptor 
+
 api.interceptors.request.use(
     (config) => {
-        const token = typeof window !== 'undefined'
-                ? localStorage.getItem('token')
-                : null;
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-        if(token){
-            config.headers.Authorization = `Bearer ${token}`;
+        if (token) {
+            config.headers = config.headers ?? new AxiosHeaders();
+            const headers = config.headers as AxiosHeaders;
+            headers.set('Authorization', `Bearer ${token}`);
         }
+
         return config;
     },
     (error) => Promise.reject(error)
 );
-// Đăng ký response interceptor
+
 api.interceptors.response.use(
     (response) => response.data,
     (error) => {
-        if(error.response?.status === 401){
-            if(typeof window !== 'undefined'){
-                localStorage.removeItem('token');
-                window.location.href = '/login'; // Chuyển về login của user
-            }
+        if (error.response?.status === 401 && typeof window !== 'undefined') {
+            localStorage.removeItem('token');
+            const redirectUrl = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+            window.location.href = redirectUrl;
         }
+
         return Promise.reject(error);
     }
-)
+);
 
 export default api;

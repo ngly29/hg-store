@@ -25,6 +25,8 @@ export default function CreateProduct(){
     });
     const [categories, setCategories] = useState<any[]>([]);
     const [galleryImages, setGalleryImages] = useState<string[]>(Array(4).fill(''));
+    const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+    const [coverFile, setCoverFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     // Lấy danh sách category
     const fetchCategories = async() => {
@@ -39,52 +41,65 @@ export default function CreateProduct(){
     useEffect(() => {
         fetchCategories();
     }, [addNotification]);
-    // Thêm biến thể
+
+    const formVariants: VariantRequest[] = Array.isArray(formData.variants) ? formData.variants : [];
+
     const handleAddVariant = () => {
-        setFormData((prev) => ({
-            ...prev,
-            variants: [
-                ...prev.variants,
-                {
-                    size: '',
-                    color: '',
-                    price: prev.price,
-                    stock: 0,
-                    sku: '',
-                    imgUrl: '',
-                }
-            ]
-        }));
+        setFormData((prev) => {
+            const currentVariants: VariantRequest[] = Array.isArray(prev.variants) ? prev.variants : [];
+            return {
+                ...prev,
+                variants: [
+                    ...currentVariants,
+                    {
+                        size: '',
+                        color: '',
+                        price: prev.price,
+                        stock: 0,
+                        sku: '',
+                        imgUrl: '',
+                    }
+                ]
+            };
+        });
     }
-    // Xóa biến thể
+
     const handleRemoveVariant = (index: number) => {
-        setFormData((prev) => ({
-            ...prev,
-            variants: prev.variants.filter((_, i) => i !== index),
-        }));
+        setFormData((prev) => {
+            const currentVariants: VariantRequest[] = Array.isArray(prev.variants) ? prev.variants : [];
+            return {
+                ...prev,
+                variants: currentVariants.filter((_, i) => i !== index),
+            };
+        });
     };
-    // Cập nhật biến thể
+
     const handleVariantChange = (
         index: number, field: keyof VariantRequest, value: string | number
     ) => {
         setFormData((prev) => {
-            const newVariants = [...prev.variants];
-            newVariants[index] = {...newVariants[index], [field]: value};
-            return {...prev, variants: newVariants,};
+            const currentVariants: VariantRequest[] = Array.isArray(prev.variants) ? prev.variants : [];
+            const newVariants = [...currentVariants];
+            newVariants[index] = { ...newVariants[index], [field]: value } as VariantRequest;
+            return { ...prev, variants: newVariants };
         });
     };
     // Tạo sản phẩm
     const normalizeProductPayload = (payload: ProductRequest): ProductRequest => ({
-        ...payload,
         name: payload.name.trim(),
         description: payload.description?.trim() || '',
-        imgUrl: payload.imgUrl?.startsWith('data:image/') ? '' : payload.imgUrl || '',
-        variants: payload.variants.map((variant) => ({
+        price: Number(payload.price) || 0,
+        imgUrl: payload.imgUrl?.trim() || '',
+        isPublished: payload.isPublished ?? false,
+        categoryId: Number(payload.categoryId) || 0,
+        variants: (payload.variants ?? []).map((variant) => ({
             ...variant,
             size: variant.size?.trim() || '',
             color: variant.color?.trim() || '',
             sku: variant.sku?.trim() || '',
-            imgUrl: variant.imgUrl?.startsWith('data:image/') ? '' : variant.imgUrl || '',
+            price: variant.price != null ? Number(variant.price) : null,
+            stock: variant.stock != null ? Number(variant.stock) : null,
+            imgUrl: variant.imgUrl?.trim() || '',
         })),
     });
 
@@ -92,11 +107,20 @@ export default function CreateProduct(){
         try {
             setIsSubmitting(true);
             const payload = normalizeProductPayload(formData);
-            await productApi.postProduct(payload);
+            const createdProduct = await productApi.postProduct(payload);
+
+            if (coverFile) {
+                await productApi.uploadProductImage(createdProduct.id, coverFile, true);
+            }
+
+            if (galleryFiles.length > 0) {
+                await productApi.uploadProductImages(createdProduct.id, galleryFiles);
+            }
+
             addNotification('success', 'Tạo sản phẩm thành công!');
             router.push("/admin/products");
         } catch (error: any){
-            addNotification('error', error.response.data.message || error.message || "Tạo sản phẩm thất bại!");
+            addNotification('error', error?.response?.data?.message || error?.message || "Tạo sản phẩm thất bại!");
         } finally {
             setIsSubmitting(false);
         }
@@ -112,13 +136,30 @@ export default function CreateProduct(){
     // Validate
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if(!formData.name.trim()){
+
+        if (!formData.name.trim()) {
             addNotification('error', 'Vui lòng nhập tên sản phẩm');
             return;
         }
-        if (formData.price <= 0) { addNotification('error', 'Vui lòng nhập giá sản phẩm!'); return; }
-        if (!formData.categoryId) { addNotification('error', 'Vui lòng chọn danh mục!'); return; }
-        if (formData.variants.length === 0) { addNotification('error', 'Vui lòng thêm ít nhất 1 biến thể!'); return; }
+
+        if (Number(formData.price) <= 0) {
+            addNotification('error', 'Vui lòng nhập giá sản phẩm!');
+            return;
+        }
+
+        if (!formData.categoryId) {
+            addNotification('error', 'Vui lòng chọn danh mục!');
+            return;
+        }
+
+        const hasVariantError = (formData.variants ?? []).some((variant) => {
+            return !variant.size?.trim() || !variant.color?.trim() || !variant.sku?.trim();
+        });
+
+        if ((formData.variants ?? []).length > 0 && hasVariantError) {
+            addNotification('error', 'Mỗi biến thể cần có Size, Màu sắc và SKU!');
+            return;
+        }
 
         handleCreateProduct();
     };
@@ -128,27 +169,31 @@ export default function CreateProduct(){
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate
         if (!file.type.startsWith('image/')) {
             addNotification('error', 'Chỉ chấp nhận file ảnh!');
             return;
         }
+
         if (file.size > 5 * 1024 * 1024) {
             addNotification('error', 'File tối đa 5MB!');
             return;
         }
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const dataUrl = reader.result as string;
-            if (dataUrl.length > 255) {
-                addNotification('warning', 'Ảnh upload quá lớn cho cơ sở dữ liệu, hệ thống sẽ bỏ qua ảnh này để tránh lỗi lưu trữ.');
-                setFormData((prev) => ({ ...prev, imgUrl: '' }));
-                return;
-            }
-            setFormData((prev) => ({ ...prev, imgUrl: dataUrl }));
-        };
-        reader.readAsDataURL(file);
+
+        setCoverFile(file);
+        const objectUrl = URL.createObjectURL(file);
+        setFormData((prev) => ({ ...prev, imgUrl: objectUrl }));
     };
+
+    const removeCoverImage = () => {
+        setCoverFile(null);
+        setFormData((prev) => ({ ...prev, imgUrl: '' }));
+    };
+
+    const removeGalleryImage = (index: number) => {
+        setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
+        setGalleryImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleVariantFileChange = (
         e: React.ChangeEvent<HTMLInputElement>,
         index: number
@@ -161,17 +206,8 @@ export default function CreateProduct(){
             return;
         }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const dataUrl = reader.result as string;
-            if (dataUrl.length > 255) {
-                addNotification('warning', 'Ảnh biến thể quá lớn, hệ thống sẽ bỏ qua ảnh này để tránh lỗi lưu dữ liệu.');
-                handleVariantChange(index, 'imgUrl', '');
-                return;
-            }
-            handleVariantChange(index, 'imgUrl', dataUrl);
-        };
-        reader.readAsDataURL(file);
+        const objectUrl = URL.createObjectURL(file);
+        handleVariantChange(index, 'imgUrl', objectUrl);
     };
 
     const handleGalleryImageChange = (
@@ -186,15 +222,43 @@ export default function CreateProduct(){
             return;
         }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setGalleryImages((prev) => {
-                const next = [...prev];
-                next[index] = reader.result as string;
-                return next;
-            });
-        };
-        reader.readAsDataURL(file);
+        setGalleryFiles((prev) => {
+            const next = [...prev];
+            next[index] = file;
+            return next;
+        });
+
+        const objectUrl = URL.createObjectURL(file);
+        setGalleryImages((prev) => {
+            const next = [...prev];
+            next[index] = objectUrl;
+            return next;
+        });
+    };
+
+    const handleUploadMultipleGallery = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files ?? []);
+        if (!files.length) return;
+
+        const invalidFiles = files.filter((file) => !file.type.startsWith('image/'));
+        if (invalidFiles.length) {
+            addNotification('error', 'Chỉ chấp nhận file ảnh!');
+            e.target.value = '';
+            return;
+        }
+
+        const nextFiles = [...galleryFiles, ...files].slice(0, 8);
+        const previewUrls = nextFiles.map((file) => URL.createObjectURL(file));
+        setGalleryFiles(nextFiles);
+        setGalleryImages((prev) => {
+            const next = [...Array(4).fill('')];
+            for (let i = 0; i < previewUrls.length; i += 1) {
+                next[i] = previewUrls[i];
+            }
+            return next;
+        });
+
+        e.target.value = '';
     };
 
     return (
@@ -260,13 +324,20 @@ export default function CreateProduct(){
 
                             <div className={styles.field}>
                                 <label className={styles.label}>Trạng thái</label>
-                                <button
-                                    type="button"
-                                    onClick={togglePublished}
-                                    className={formData.isPublished ? styles.publishButtonOn : styles.publishButtonOff}
-                                >
-                                    {formData.isPublished ? 'Đang bán' : 'Đã ẩn'}
-                                </button>
+                                <div className={styles.toggleRow}>
+                                    <button
+                                        type="button"
+                                        onClick={togglePublished}
+                                        className={`${styles.publishToggle} ${formData.isPublished ? styles.publishToggleOn : styles.publishToggleOff}`}
+                                        aria-label="Thay đổi trạng thái sản phẩm"
+                                        aria-pressed={Boolean(formData.isPublished)}
+                                    >
+                                        <span className={styles.publishToggleThumb} />
+                                    </button>
+                                    <span className={styles.publishToggleText}>
+                                        {formData.isPublished ? 'Đang bán' : 'Đã ẩn'}
+                                    </span>
+                                </div>
                             </div>
 
                             <div className={styles.field}>
@@ -291,7 +362,7 @@ export default function CreateProduct(){
                             <div className={styles.fieldFull}>
                                 <label className={styles.label}>Mô tả</label>
                                 <textarea
-                                    value={formData.description}
+                                    value={String(formData.description ?? '')}
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
@@ -318,6 +389,13 @@ export default function CreateProduct(){
                                     {formData.imgUrl ? (
                                         <div className={styles.previewWrap}>
                                             <img src={formData.imgUrl} alt="Preview" className={styles.preview} />
+                                            <button
+                                                type="button"
+                                                onClick={removeCoverImage}
+                                                className={styles.removeImageButton}
+                                            >
+                                                Xóa ảnh bìa
+                                            </button>
                                         </div>
                                     ) : (
                                         <div className={styles.emptyImageBox}>Chưa có ảnh bìa</div>
@@ -326,7 +404,32 @@ export default function CreateProduct(){
                             </div>
 
                             <div className={styles.imageSection}>
-                                <label className={styles.label}>Ảnh phụ</label>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                                    <label className={styles.label}>Ảnh phụ</label>
+                                    <label
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '8px 12px',
+                                            borderRadius: 8,
+                                            backgroundColor: '#0099FF',
+                                            color: '#fff',
+                                            cursor: 'pointer',
+                                            fontSize: 13,
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        Tải nhiều ảnh
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            onChange={handleUploadMultipleGallery}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </label>
+                                </div>
                                 <div className={styles.galleryGrid}>
                                     {galleryImages.map((item, index) => (
                                         <div key={index} className={styles.galleryItem}>
@@ -337,7 +440,17 @@ export default function CreateProduct(){
                                                 className={styles.galleryInput}
                                             />
                                             {item ? (
-                                                <img src={item} alt={`Ảnh phụ ${index + 1}`} className={styles.galleryThumb} />
+                                                <>
+                                                    <img src={item} alt={`Ảnh phụ ${index + 1}`} className={styles.galleryThumb} />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeGalleryImage(index)}
+                                                        className={styles.removeGalleryButton}
+                                                        aria-label={`Xóa ảnh phụ ${index + 1}`}
+                                                    >
+                                                        Xóa ảnh
+                                                    </button>
+                                                </>
                                             ) : (
                                                 <div className={styles.galleryPlaceholder}>+</div>
                                             )}
@@ -353,7 +466,7 @@ export default function CreateProduct(){
                 <div className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <h2 className={styles.sectionTitle}>
-                            Biến thể ({formData.variants.length})
+                            Biến thể ({formVariants.length})
                         </h2>
                         <button
                             type="button"
@@ -364,7 +477,7 @@ export default function CreateProduct(){
                         </button>
                     </div>
 
-                    {formData.variants.length === 0 ? (
+                    {formVariants.length === 0 ? (
                         <div className={styles.emptyVariants}>
                             Chưa có biến thể nào. Nhấn "Thêm biến thể" để bắt đầu.
                         </div>
@@ -382,7 +495,7 @@ export default function CreateProduct(){
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {formData.variants.map((variant, index) => (
+                                    {formVariants.map((variant, index) => (
                                         <tr key={index}>
                                             <td>
                                                 <input
@@ -417,7 +530,7 @@ export default function CreateProduct(){
                                             <td>
                                                 <input
                                                     type="number"
-                                                    value={variant.price}
+                                                    value={Number(variant.price ?? 0)}
                                                     onChange={(e) =>
                                                         handleVariantChange(
                                                             index,
@@ -431,7 +544,7 @@ export default function CreateProduct(){
                                             <td>
                                                 <input
                                                     type="number"
-                                                    value={variant.stock}
+                                                    value={Number(variant.stock ?? 0)}
                                                     onChange={(e) =>
                                                         handleVariantChange(
                                                             index,

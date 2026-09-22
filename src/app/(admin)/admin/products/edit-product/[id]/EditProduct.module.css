@@ -203,6 +203,7 @@
 }
 
 .previewWrap {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -288,6 +289,37 @@
     background: #f8fafc;
     position: relative;
     z-index: 1;
+}
+
+.removeImageButton,
+.removeGalleryButton {
+    position: absolute;
+    z-index: 3;
+    border: none;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.76);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.removeImageButton {
+    top: 8px;
+    right: 8px;
+    padding: 5px 10px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+}
+
+.removeGalleryButton {
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
 }
 
 .sectionHeader {

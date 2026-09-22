@@ -1,0 +1,356 @@
+.page {
+    width: 100%;
+    min-height: 100%;
+    padding: 8px 12px 30px;
+    box-sizing: border-box;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.headerRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.eyebrow {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.02em;
+}
+
+.title {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* =========================
+   MAIN CARD
+========================= */
+
+.card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.searchBox {
+    position: relative;
+    width: 360px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.searchBox input {
+    width: 100%;
+    height: 40px;
+    padding: 0 14px 0 38px;
+
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #0f172a;
+
+    font-size: 14px;
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.searchBox input::placeholder {
+    color: #94a3b8;
+}
+
+.searchBox input:hover {
+    border-color: #cbd5e1;
+}
+
+.searchBox input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+/* Header */
+
+.table thead {
+    background: #f8fafc;
+}
+
+.table th {
+    height: 48px;
+    padding: 0 20px;
+
+    text-align: left;
+    vertical-align: middle;
+
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+
+    white-space: nowrap;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Body */
+
+.table td {
+    height: 58px;
+    padding: 0 20px;
+
+    color: #334155;
+    vertical-align: middle;
+
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* STT */
+
+.table th:first-child,
+.table td:first-child {
+    width: 70px;
+    color: #94a3b8;
+}
+
+/* Name */
+
+.nameCell {
+    min-width: 180px;
+    font-weight: 600;
+    color: #0f172a !important;
+}
+
+/* Email */
+
+.table td:nth-child(3) {
+    min-width: 240px;
+    color: #475569;
+}
+
+/* Phone */
+
+.table td:nth-child(4) {
+    min-width: 150px;
+}
+
+/* Date */
+
+.table td:last-child {
+    min-width: 120px;
+    color: #64748b;
+}
+
+/* =========================
+   ROLE BADGE
+========================= */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 105px;
+    height: 28px;
+    padding: 0 10px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.roleAdmin {
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+}
+
+.roleUser {
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #d1fae5;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.paginationBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 16px 20px;
+
+    border-top: 1px solid #eef2f7;
+    background: #ffffff;
+}
+
+.paginationInfo {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.paginationControls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Page size */
+
+.pageSizeSelect {
+    height: 34px;
+    padding: 0 30px 0 10px;
+
+    border: 1px solid #dbe2ea;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #475569;
+
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+
+    margin-right: 6px;
+}
+
+.pageSizeSelect:hover {
+    border-color: #cbd5e1;
+}
+
+.pageSizeSelect:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
+/* Pagination button */
+
+.pageButton {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #dbe2ea;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #475569;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.pageButton:hover:not(:disabled) {
+    border-color: #bfdbfe;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.pageButtonActive {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.pageButtonActive:hover {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.pageButton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* =========================
+   EMPTY / LOADING
+========================= */
+
+.emptyState {
+    min-height: 260px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    color: #64748b;
+    font-size: 14px;
+    text-align: center;
+}
+
+

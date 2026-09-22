@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import styles from "./page.module.css";
 import { productApi } from "@/lib/productApi";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNotification } from "@/stores/notificationStore";
 import { ProductResponse } from "@/types/product";
 import Table, {Column} from "@/components/table/page";
@@ -14,11 +14,16 @@ export default function ProductPage(){
     const { addNotification } = useNotification();
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(5);
-    const {data: products, isLoading, isError} = useQuery({
-        queryKey: ["products"],
-        queryFn: productApi.getAll
+    const { data: products = [], isLoading, isError } = useQuery<ProductResponse[]>({
+        queryKey: ["products", currentPage, pageSize, searchTerm],
+        queryFn: () => productApi.getAll({
+            page: currentPage,
+            size: pageSize,
+            search: searchTerm.trim() || null,
+            sort: "createdAt,desc",
+        }),
     });
 
     const handleDeleteProduct = async (productId: number) => {
@@ -35,30 +40,45 @@ export default function ProductPage(){
         }
     };
 
+    const handleTogglePublish = async (product: ProductResponse) => {
+        try {
+            await productApi.togglePublish(product.id);
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            addNotification('success', product.isPublished ? 'Đã ẩn sản phẩm' : 'Đã hiển thị sản phẩm');
+        } catch (error: any) {
+            addNotification('error', error?.response?.data?.message || error?.message || 'Cập nhật trạng thái thất bại!');
+        }
+    };
+
     const productColumns: Column<ProductResponse>[] = [
-        {
-            title: "STT",
-            render: (_product: ProductResponse, index: number) => index + 1,
-            width: 60
-        },
         {
             key: "imgUrl",
             title: "Ảnh",
-            render: (product: ProductResponse) => (
-                <img 
-                    src={product.imgUrl}
-                    alt={product.name}
-                    width={60}
-                    height={60}
-                    style={{boxShadow:"0 2px 8px rgba(0, 0, 0, 0.08)"}}
-                />
-            ),
+            render: (product: ProductResponse) => {
+                const primaryImage = product.images?.find((image) => image.isPrimary) ?? product.images?.[0];
+                const imageUrl = primaryImage?.imageData || product.imgUrl || '';
+
+                return (
+                    <img
+                        src={imageUrl}
+                        alt={product.name}
+                        width={60}
+                        height={60}
+                        style={{ boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)', objectFit: 'cover' }}
+                    />
+                );
+            },
             width: 60
         },
         {
             key: "name",
             title: "Tên sản phẩm",
-            width: 350
+            width: 350,
+            render: (product: ProductResponse) => (
+                <Link href={`/admin/products/${product.id}`} className={styles.productNameLink}>
+                    {product.name}
+                </Link>
+            )
         },
         {
             key: "categoryName",
@@ -75,15 +95,23 @@ export default function ProductPage(){
             key: "isPublished",
             title: "Trạng thái",
             render: (product) => (
-                <span className={product.isPublished ? styles.published : styles.hidden}>
+                <button
+                    type="button"
+                    className={product.isPublished ? styles.published : styles.hidden}
+                    onClick={() => handleTogglePublish(product)}
+                    style={{ border: 'none', cursor: 'pointer', padding: '6px 10px', borderRadius: 999 }}
+                >
                     {product.isPublished ? 'Đang bán' : 'Đã ẩn'}
-                </span>
+                </button>
             ),
         },
         {
             title: "Hành động",
             render: (product: ProductResponse) => (
                 <div className={styles.actionGroup}>
+                    <Link href={`/admin/products/${product.id}`} className={styles.detailBtn}>
+                        Chi tiết
+                    </Link>
                     <Link href={`/admin/products/edit-product/${product.id}`} className={styles.editBtn}>
                         Sửa
                     </Link>
@@ -96,7 +124,7 @@ export default function ProductPage(){
                     </button>
                 </div>
             ),
-            width: 160
+            width: 180
         },
     ];
 
@@ -106,25 +134,11 @@ export default function ProductPage(){
         }
     }, [isError, addNotification]);
 
-    const filteredProducts = useMemo(() => {
-        if (!products) return [];
-        if (!searchTerm.trim()) return products;
-
-        const term = searchTerm.toLowerCase().trim();
-        return products.filter(
-            (p) =>
-                p.name.toLowerCase().includes(term) ||
-                p.categoryName?.toLowerCase().includes(term)
-        );
-    }, [products, searchTerm]);
-
-    const totalPages = Math.ceil(filteredProducts.length / pageSize);
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const currentProducts = filteredProducts.slice(startIndex, endIndex);
+    const hasPreviousPage = currentPage > 0;
+    const hasNextPage = products.length === pageSize;
 
     useEffect(() => {
-        setCurrentPage(1);
+        setCurrentPage(0);
     }, [searchTerm, pageSize]);
 
     if(isLoading) return <div className={styles.loading}>Đang tải...</div>
@@ -149,78 +163,42 @@ export default function ProductPage(){
                 </div>
             </div>
             <div className={styles.table}>
-                {currentProducts.length === 0 ? (
+                {products.length === 0 ? (
                     <div className={styles.empty}>
                         {searchTerm ? 'Không tìm thấy sản phẩm nào!' : 'Chưa có sản phẩm nào!'}
                     </div>
                 ) : (
-                    <Table data={currentProducts} columns={productColumns} />
+                    <Table data={products} columns={productColumns} />
                 )}
             </div>
-            {filteredProducts.length > 0 && (
+            {products.length > 0 && (
                 <div className={styles.pagination}>
                     <div className={styles.paginationInfo}>
-                        Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)}{' '}
-                        / {filteredProducts.length} sản phẩm
+                        Trang {currentPage + 1} • {products.length} sản phẩm
                     </div>
 
                     <div className={styles.paginationControls}>
-                        {/* Page size */}
                         <select
                             value={pageSize}
                             onChange={(e) => setPageSize(Number(e.target.value))}
                             className={styles.pageSize}
                         >
                             <option value={5}>5 / trang</option>
+                            <option value={10}>10 / trang</option>
+                            <option value={20}>20 / trang</option>
                         </select>
 
-                        {/* Previous */}
                         <button
-                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                            disabled={!hasPreviousPage}
                             className={styles.pageBtn}
                         >
                             Trước
                         </button>
 
-                        {/* Page numbers */}
-                        {Array.from({ length: totalPages }, (_, i) => i + 1)
-                            .filter((page) => {
-                                // Hiển thị: trang đầu, trang cuối, trang hiện tại ± 1
-                                return (
-                                    page === 1 ||
-                                    page === totalPages ||
-                                    Math.abs(page - currentPage) <= 1
-                                );
-                            })
-                            .map((page, index, array) => {
-                                // Thêm dấu ... giữa các khoảng
-                                const prevPage = array[index - 1];
-                                const showEllipsis = prevPage && page - prevPage > 1;
-
-                                return (
-                                    <span key={page}>
-                                        {showEllipsis && (
-                                            <span className={styles.ellipsis}>...</span>
-                                        )}
-                                        <button
-                                            onClick={() => setCurrentPage(page)}
-                                            className={`${styles.pageBtn} ${
-                                                currentPage === page ? styles.active : ''
-                                            }`}
-                                        >
-                                            {page}
-                                        </button>
-                                    </span>
-                                );
-                            })}
-
-                        {/* Next */}
                         <button
-                            onClick={() =>
-                                setCurrentPage((p) => Math.min(totalPages, p + 1))
-                            }
-                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage((p) => p + 1)}
+                            disabled={!hasNextPage}
                             className={styles.pageBtn}
                         >
                             Sau

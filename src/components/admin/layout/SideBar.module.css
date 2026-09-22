@@ -1,22 +1,23 @@
 .container {
     width: 240px;
-    min-height: 100vh;
-
+    height: 100vh;
+    position: sticky;
+    top: 0;
     display: flex;
     flex-direction: column;
-
     background-color: #ffffff;
     border-right: 1px solid #e5e7eb;
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
 .header {
     height: 70px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
 }
 
 .header h1 {
@@ -30,6 +31,7 @@
     flex-direction: column;
     padding: 16px 12px;
     gap: 4px;
+    overflow: hidden;
 }
 
 .navItem {

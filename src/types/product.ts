@@ -1,41 +1,51 @@
-export interface ProductResponse{
+export interface ProductImageResponse {
     id: number;
-    name: string;
-    slug: string;
-    description: string;
-    price: number;
-    imgUrl: string;
-    isPublished?: boolean;
-    categoryId: number;
-    categoryName: string;
-    variants: VariantResponse[];
+    productId: number | null;
+    fileName: string | null;
+    contentType: string | null;
+    imageData: string | null;
+    isPrimary: boolean | null;
 }
 
-export interface ProductRequest{
+export interface ProductResponse {
+    id: number;
     name: string;
-    description: string;
+    slug?: string;
+    description?: string | null;
     price: number;
-    imgUrl: string;
-    isPublished?: boolean;
+    imgUrl?: string | null;
+    isPublished?: boolean | null;
+    categoryId?: number | null;
+    categoryName?: string | null;
+    images?: ProductImageResponse[] | null;
+    variants?: VariantResponse[] | null;
+}
+
+export interface ProductRequest {
+    name: string;
+    description?: string | null;
+    price: number;
+    imgUrl?: string | null;
+    isPublished?: boolean | null;
     categoryId: number;
     variants: VariantRequest[];
 }
 
-export interface VariantResponse{
+export interface VariantResponse {
     id: number;
     size: string;
     color: string;
     price: number;
     stock: number;
     sku: string;
-    imgUrl: string;
+    imgUrl?: string | null;
 }
 
-export interface VariantRequest{
+export interface VariantRequest {
     size: string;
     color: string;
-    stock: number;
+    price?: number | null;
+    stock?: number | null;
     sku: string;
-    imgUrl: string;
-    price:number
+    imgUrl?: string | null;
 }

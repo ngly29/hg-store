@@ -3,7 +3,7 @@
 import { categoryApi } from "@/lib/categoryApi";
 import { productApi } from "@/lib/productApi";
 import { useNotification } from "@/stores/notificationStore";
-import { ProductRequest, ProductResponse, VariantRequest } from "@/types/product";
+import { ProductImageResponse, ProductRequest, ProductResponse, VariantRequest } from "@/types/product";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import styles from "./EditProduct.module.css";
@@ -27,8 +27,12 @@ export default function EditProductPage() {
     });
     const [categories, setCategories] = useState<any[]>([]);
     const [galleryImages, setGalleryImages] = useState<string[]>(Array(4).fill(''));
+    const [productImages, setProductImages] = useState<ProductImageResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const primaryImage = productImages.find((image) => image.isPrimary);
+    const secondaryGalleryImages = productImages.filter((image) => !image.isPrimary);
 
     const fetchCategories = async () => {
         try {
@@ -36,6 +40,24 @@ export default function EditProductPage() {
             setCategories(data);
         } catch {
             addNotification('error', 'Không thể tải danh mục!');
+        }
+    };
+
+    const refreshProductImages = async () => {
+        if (!productId) return;
+
+        try {
+            const product: ProductResponse = await productApi.getById(productId);
+            const images = product.images ?? [];
+
+            setProductImages(images);
+            setGalleryImages(Array.from({ length: 4 }, (_, index) => images[index]?.imageData || ''));
+            setFormData((prev) => ({
+                ...prev,
+                imgUrl: product.imgUrl || prev.imgUrl || '',
+            }));
+        } catch (error: any) {
+            addNotification('error', error?.response?.data?.message || error?.message || 'Không thể tải ảnh sản phẩm!');
         }
     };
 
@@ -65,8 +87,9 @@ export default function EditProductPage() {
                     : [],
             });
 
+            setProductImages(product.images ?? []);
             setGalleryImages(Array.from({ length: 4 }, (_, index) => {
-                const image = product.variants?.[index]?.imgUrl || '';
+                const image = product.images?.[index]?.imageData || '';
                 return image;
             }));
         } catch (error: any) {
@@ -85,7 +108,7 @@ export default function EditProductPage() {
         setFormData((prev) => ({
             ...prev,
             variants: [
-                ...prev.variants,
+                ...(prev.variants ?? []),
                 {
                     size: '',
                     color: '',
@@ -101,7 +124,7 @@ export default function EditProductPage() {
     const handleRemoveVariant = (index: number) => {
         setFormData((prev) => ({
             ...prev,
-            variants: prev.variants.filter((_, i) => i !== index),
+            variants: (prev.variants ?? []).filter((_, i) => i !== index),
         }));
     };
 
@@ -111,7 +134,7 @@ export default function EditProductPage() {
         value: string | number
     ) => {
         setFormData((prev) => {
-            const newVariants = [...prev.variants];
+            const newVariants = [...(prev.variants ?? [])];
             newVariants[index] = { ...newVariants[index], [field]: value };
             return { ...prev, variants: newVariants };
         });
@@ -125,16 +148,20 @@ export default function EditProductPage() {
     };
 
     const normalizeProductPayload = (payload: ProductRequest): ProductRequest => ({
-        ...payload,
         name: payload.name.trim(),
         description: payload.description?.trim() || '',
-        imgUrl: payload.imgUrl?.startsWith('data:image/') ? '' : payload.imgUrl || '',
-        variants: payload.variants.map((variant) => ({
+        price: Number(payload.price) || 0,
+        imgUrl: payload.imgUrl?.trim() || '',
+        isPublished: payload.isPublished ?? false,
+        categoryId: Number(payload.categoryId) || 0,
+        variants: (payload.variants ?? []).map((variant) => ({
             ...variant,
             size: variant.size?.trim() || '',
             color: variant.color?.trim() || '',
             sku: variant.sku?.trim() || '',
-            imgUrl: variant.imgUrl?.startsWith('data:image/') ? '' : variant.imgUrl || '',
+            price: variant.price != null ? Number(variant.price) : null,
+            stock: variant.stock != null ? Number(variant.stock) : null,
+            imgUrl: variant.imgUrl?.trim() || '',
         })),
     });
 
@@ -159,23 +186,30 @@ export default function EditProductPage() {
             addNotification('error', 'Vui lòng nhập tên sản phẩm');
             return;
         }
-        if (formData.price <= 0) {
+
+        if (Number(formData.price) <= 0) {
             addNotification('error', 'Vui lòng nhập giá sản phẩm!');
             return;
         }
+
         if (!formData.categoryId) {
             addNotification('error', 'Vui lòng chọn danh mục!');
             return;
         }
-        if (formData.variants.length === 0) {
-            addNotification('error', 'Vui lòng thêm ít nhất 1 biến thể!');
+
+        const hasVariantError = (formData.variants ?? []).some((variant) => {
+            return !variant.size?.trim() || !variant.color?.trim() || !variant.sku?.trim();
+        });
+
+        if ((formData.variants ?? []).length > 0 && hasVariantError) {
+            addNotification('error', 'Mỗi biến thể cần có Size, Màu sắc và SKU!');
             return;
         }
 
         handleUpdateProduct();
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -189,20 +223,22 @@ export default function EditProductPage() {
             return;
         }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const dataUrl = reader.result as string;
-            if (dataUrl.length > 255) {
-                addNotification('warning', 'Ảnh upload quá lớn cho cơ sở dữ liệu, hệ thống sẽ bỏ qua ảnh này để tránh lỗi lưu trữ.');
-                setFormData((prev) => ({ ...prev, imgUrl: '' }));
-                return;
-            }
-            setFormData((prev) => ({ ...prev, imgUrl: dataUrl }));
-        };
-        reader.readAsDataURL(file);
+        try {
+            const uploaded = await productApi.uploadProductImage(productId, file, true);
+            setFormData((prev) => ({ ...prev, imgUrl: uploaded.imageData || prev.imgUrl }));
+            await productApi.getById(productId).then((freshProduct) => {
+                setFormData((prev) => ({
+                    ...prev,
+                    imgUrl: freshProduct.imgUrl || prev.imgUrl,
+                }));
+            });
+            addNotification('success', 'Upload ảnh chính thành công!');
+        } catch (error: any) {
+            addNotification('error', error?.response?.data?.message || error?.message || 'Upload ảnh thất bại!');
+        }
     };
 
-    const handleGalleryImageChange = (
+    const handleGalleryImageChange = async (
         e: React.ChangeEvent<HTMLInputElement>,
         index: number
     ) => {
@@ -214,15 +250,61 @@ export default function EditProductPage() {
             return;
         }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setGalleryImages((prev) => {
-                const next = [...prev];
-                next[index] = reader.result as string;
-                return next;
-            });
-        };
-        reader.readAsDataURL(file);
+        try {
+            await productApi.uploadProductImage(productId, file, index === 0);
+            await refreshProductImages();
+            addNotification('success', 'Tải ảnh lên thành công!');
+        } catch (error: any) {
+            addNotification('error', error?.response?.data?.message || error?.message || 'Tải ảnh thất bại!');
+        } finally {
+            e.target.value = '';
+        }
+    };
+
+    const handleUploadMultipleImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files ?? []);
+        if (!files.length) return;
+
+        const invalid = files.some((file) => !file.type.startsWith('image/'));
+        if (invalid) {
+            addNotification('error', 'Chỉ chấp nhận file ảnh!');
+            e.target.value = '';
+            return;
+        }
+
+        try {
+            await productApi.uploadProductImages(productId, files);
+            await refreshProductImages();
+            addNotification('success', `Đã upload ${files.length} ảnh thành công!`);
+        } catch (error: any) {
+            addNotification('error', error?.response?.data?.message || error?.message || 'Upload ảnh thất bại!');
+        } finally {
+            e.target.value = '';
+        }
+    };
+
+    const handleSetPrimaryImage = async (imageId: number) => {
+        try {
+            await productApi.setPrimaryImage(productId, imageId);
+            await refreshProductImages();
+            addNotification('success', 'Đã đặt ảnh chính thành công!');
+        } catch (error: any) {
+            addNotification('error', error?.response?.data?.message || error?.message || 'Không thể đặt ảnh chính!');
+        }
+    };
+
+    const handleDeleteImage = async (imageId: number) => {
+        if (!window.confirm('Bạn có chắc chắn muốn xóa ảnh này?')) {
+            return;
+        }
+
+        try {
+            await productApi.deleteProductImage(productId, imageId);
+            await refreshProductImages();
+            addNotification('success', 'Xóa ảnh thành công!');
+        } catch (error: any) {
+            addNotification('error', error?.response?.data?.message || error?.message || 'Xóa ảnh thất bại!');
+        }
     };
 
     if (isLoading) {
@@ -290,9 +372,9 @@ export default function EditProductPage() {
                                     <button
                                         type="button"
                                         onClick={togglePublished}
-                                        className={`${styles.switch} ${formData.isPublished ? styles.switchOn : styles.switchOff}`}
+                                        className={`${styles.switch} ${Boolean(formData.isPublished) ? styles.switchOn : styles.switchOff}`}
                                         aria-label="Thay đổi trạng thái sản phẩm"
-                                        aria-pressed={formData.isPublished}
+                                        aria-pressed={Boolean(formData.isPublished)}
                                     >
                                         <span className={styles.switchThumb} />
                                     </button>
@@ -324,7 +406,7 @@ export default function EditProductPage() {
                             <div className={styles.fieldFull}>
                                 <label className={styles.label}>Mô tả</label>
                                 <textarea
-                                    value={formData.description}
+                                    value={formData.description ?? ''}
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
@@ -351,6 +433,15 @@ export default function EditProductPage() {
                                     {formData.imgUrl ? (
                                         <div className={styles.previewWrap}>
                                             <img src={formData.imgUrl} alt="Preview" className={styles.preview} />
+                                            {primaryImage && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDeleteImage(primaryImage.id)}
+                                                    className={styles.removeImageButton}
+                                                >
+                                                    Xóa ảnh bìa
+                                                </button>
+                                            )}
                                         </div>
                                     ) : (
                                         <div className={styles.emptyImageBox}>Chưa có ảnh bìa</div>
@@ -359,23 +450,92 @@ export default function EditProductPage() {
                             </div>
 
                             <div className={styles.imageSection}>
-                                <label className={styles.label}>Ảnh phụ</label>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                                    <label className={styles.label}>Ảnh phụ</label>
+                                    <label
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '8px 12px',
+                                            borderRadius: 8,
+                                            backgroundColor: '#0099FF',
+                                            color: '#fff',
+                                            cursor: 'pointer',
+                                            fontSize: 13,
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        Tải nhiều ảnh
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            onChange={handleUploadMultipleImages}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </label>
+                                </div>
+
                                 <div className={styles.galleryGrid}>
-                                    {galleryImages.map((item, index) => (
-                                        <div key={index} className={styles.galleryItem}>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => handleGalleryImageChange(e, index)}
-                                                className={styles.galleryInput}
-                                            />
-                                            {item ? (
-                                                <img src={item} alt={`Ảnh phụ ${index + 1}`} className={styles.galleryThumb} />
-                                            ) : (
-                                                <div className={styles.galleryPlaceholder}>+</div>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {secondaryGalleryImages.length > 0 ? (
+                                        secondaryGalleryImages.map((image) => (
+                                            <div key={image.id} className={styles.galleryItem} style={{ position: 'relative' }}>
+                                                <img src={image.imageData || ''} alt={image.fileName || 'Product gallery'} className={styles.galleryThumb} />
+                                                <div style={{ position: 'absolute', left: 6, right: 6, bottom: 6, display: 'flex', gap: 6, justifyContent: 'center' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleSetPrimaryImage(image.id)}
+                                                        style={{
+                                                            flex: 1,
+                                                            border: 'none',
+                                                            borderRadius: 6,
+                                                            background: image.isPrimary ? '#10b981' : '#111827',
+                                                            color: '#fff',
+                                                            fontSize: 11,
+                                                            padding: '6px 4px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        {image.isPrimary ? 'Ảnh chính' : 'Đặt làm chính'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteImage(image.id)}
+                                                        style={{
+                                                            flex: 1,
+                                                            border: 'none',
+                                                            borderRadius: 6,
+                                                            background: '#ef4444',
+                                                            color: '#fff',
+                                                            fontSize: 11,
+                                                            padding: '6px 4px',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        aria-label={`Xóa ảnh ${image.fileName || 'phụ'}`}
+                                                    >
+                                                        Xóa ảnh
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        galleryImages.map((item, index) => (
+                                            <div key={index} className={styles.galleryItem}>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleGalleryImageChange(e, index)}
+                                                    className={styles.galleryInput}
+                                                />
+                                                {item ? (
+                                                    <img src={item} alt={`Ảnh phụ ${index + 1}`} className={styles.galleryThumb} />
+                                                ) : (
+                                                    <div className={styles.galleryPlaceholder}>+</div>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -430,7 +590,7 @@ export default function EditProductPage() {
                                             <td>
                                                 <input
                                                     type="number"
-                                                    value={variant.price}
+                                                    value={variant.price ?? 0}
                                                     onChange={(e) => handleVariantChange(index, 'price', Number(e.target.value))}
                                                     className={styles.inputSmall}
                                                 />
@@ -438,7 +598,7 @@ export default function EditProductPage() {
                                             <td>
                                                 <input
                                                     type="number"
-                                                    value={variant.stock}
+                                                    value={variant.stock ?? 0}
                                                     onChange={(e) => handleVariantChange(index, 'stock', Number(e.target.value))}
                                                     className={styles.inputSmall}
                                                 />

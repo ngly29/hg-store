@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
             addNotification('success', 'Đăng nhập thành công!');
             router.push('/admin');
         } catch(err: any){
-            addNotification('error', err.message || 'Đăng nhập thất bại!');
+            addNotification('error', err?.response?.data?.message || err?.message || 'Đăng nhập thất bại!');
         } finally {
             setLoading(false);
         }

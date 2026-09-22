@@ -1,0 +1,418 @@
+.page {
+    width: 100%;
+    min-height: 100%;
+    padding: 8px 12px 30px;
+    box-sizing: border-box;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.headerRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+
+.eyebrow {
+    margin: 0 0 5px;
+    color: #888;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.title {
+    margin: 0;
+    color: #171717;
+    font-size: 27px;
+    line-height: 1.3;
+    font-weight: 650;
+    letter-spacing: -0.3px;
+}
+
+/* =========================
+   CARD / PANEL
+========================= */
+
+.card {
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e9e9e9;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.035);
+    overflow: hidden;
+}
+
+/* =========================
+   TOOLBAR / SEARCH
+========================= */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 60px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.searchBox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 420px;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    color: #999;
+    pointer-events: none;
+}
+
+.searchBox input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 36px;
+    box-sizing: border-box;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    background: #fafafa;
+
+    color: #171717;
+    font-size: 13px;
+    font-weight: 500;
+
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.searchBox input::placeholder {
+    color: #9a9a9a;
+    font-weight: 400;
+}
+
+.searchBox input:focus {
+    border-color: #c7d2fe;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.tableWrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.table thead th {
+    padding: 14px 16px;
+    text-align: left;
+
+    color: #777;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    background: #fafafa;
+    border-bottom: 1px solid #eee;
+}
+
+.table tbody td {
+    padding: 14px 16px;
+    color: #333;
+    font-size: 13px;
+    font-weight: 500;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.table tbody tr:hover {
+    background: #fafbff;
+}
+
+.codeCell {
+    color: #2563eb;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.customerCell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.customerCell strong {
+    color: #171717;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.customerCell span {
+    color: #888;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.addressCell {
+    max-width: 240px;
+    color: #555;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* =========================
+   BADGES
+========================= */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    padding: 4px 10px;
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Order status */
+.statusPending {
+    color: #b45309;
+    background: #fef3c7;
+}
+
+.statusConfirmed {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+
+.statusShipping {
+    color: #0f766e;
+    background: #ccfbf1;
+}
+
+.statusDelivered {
+    color: #15803d;
+    background: #dcfce7;
+}
+
+.statusCancelled {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+/* Payment status */
+.paymentPending {
+    color: #b45309;
+    background: #fff7ed;
+}
+
+.paymentPaid {
+    color: #15803d;
+    background: #f0fdf4;
+}
+
+.paymentFailed {
+    color: #b91c1c;
+    background: #fff1f2;
+}
+
+.paymentRefunded {
+    color: #7e22ce;
+    background: #faf5ff;
+}
+
+/* =========================
+   STATUS SELECT
+========================= */
+
+.statusSelect {
+    height: 34px;
+    padding: 0 30px 0 10px;
+    box-sizing: border-box;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    background: #fff;
+
+    color: #333;
+    font-size: 12px;
+    font-weight: 500;
+
+    cursor: pointer;
+    outline: none;
+
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'12'%20height%3D'12'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'%23777'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpolyline%20points%3D'6%209%2012%2015%2018%209'%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.statusSelect:hover {
+    border-color: #d4d4d4;
+}
+
+.statusSelect:focus {
+    border-color: #c7d2fe;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.statusSelect:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* =========================
+   PAGINATION
+========================= */
+
+.paginationBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    padding: 14px 20px;
+    border-top: 1px solid #eee;
+    background: #fff;
+}
+
+.paginationInfo {
+    color: #777;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.paginationControls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.pageSizeSelect {
+    height: 32px;
+    padding: 0 26px 0 10px;
+    margin-right: 6px;
+    box-sizing: border-box;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    background: #fff;
+
+    color: #333;
+    font-size: 12px;
+    font-weight: 500;
+
+    cursor: pointer;
+    outline: none;
+
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'12'%20height%3D'12'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20stroke%3D'%23777'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%3E%3Cpolyline%20points%3D'6%209%2012%2015%2018%209'%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+
+    transition: border-color 0.2s ease;
+}
+
+.pageSizeSelect:hover {
+    border-color: #d4d4d4;
+}
+
+.pageButton {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 10px;
+    box-sizing: border-box;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    background: #fff;
+
+    color: #444;
+    font-size: 12px;
+    font-weight: 500;
+
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.pageButton:hover:not(:disabled) {
+    border-color: #c7d2fe;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.pageButton:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.pageButtonActive {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #fff;
+}
+
+.pageButtonActive:hover:not(:disabled) {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
+    color: #fff;
+}
+
+/* =========================
+   LOADING / EMPTY / ERROR
+========================= */
+
+.loading {
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    font-size: 14px;
+}
+
+.emptyState {
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #777;
+    font-size: 14px;
+}

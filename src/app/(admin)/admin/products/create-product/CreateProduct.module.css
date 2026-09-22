@@ -127,6 +127,7 @@
 }
 
 .previewWrap {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -212,6 +213,38 @@
     background: #f8fafc;
     position: relative;
     z-index: 1;
+}
+
+.removeImageButton,
+.removeGalleryButton {
+    position: absolute;
+    z-index: 3;
+    border: none;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.76);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.removeImageButton {
+    top: 8px;
+    right: 8px;
+    padding: 5px 10px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+}
+
+.removeGalleryButton {
+    top: 6px;
+    right: 6px;
+    padding: 5px 8px;
+    max-width: calc(100% - 12px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
 }
 
 .sectionHeader {
@@ -303,26 +336,59 @@
     border-color: #cbd5e1;
 }
 
-.publishButtonOn,
-.publishButtonOff {
-    height: 44px;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    font-weight: 600;
+.toggleRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+}
+
+.publishToggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 62px;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    padding: 4px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
 }
 
-.publishButtonOn {
-    background: #dcfce7;
-    color: #166534;
-    border-color: #bbf7d0;
+.publishToggleOn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 
-.publishButtonOff {
-    background: #fee2e2;
-    color: #991b1b;
-    border-color: #fecaca;
+.publishToggleOff {
+    background: linear-gradient(135deg, #e5e7eb, #cbd5e1);
+}
+
+.publishToggleThumb {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+    transition: transform 0.2s ease;
+}
+
+.publishToggleOn .publishToggleThumb {
+    transform: translateX(30px);
+}
+
+.publishToggleOff .publishToggleThumb {
+    transform: translateX(0);
+}
+
+.publishToggleText {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #334155;
 }
 
 .actions {

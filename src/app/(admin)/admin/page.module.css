@@ -1,0 +1,374 @@
+.page {
+width: 100%;
+min-height: 100%;
+padding: 8px 12px 30px;
+box-sizing: border-box;
+}
+
+/* =========================
+HEADER
+========================= */
+
+.headerRow {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+margin-bottom: 22px;
+}
+
+.eyebrow {
+margin: 0 0 5px;
+color: #888;
+font-size: 13px;
+font-weight: 500;
+}
+
+.title {
+margin: 0;
+color: #171717;
+font-size: 27px;
+line-height: 1.3;
+font-weight: 650;
+letter-spacing: -0.3px;
+}
+
+/* =========================
+STAT CARDS
+========================= */
+
+.cardsGrid {
+display: grid;
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: 16px;
+margin-bottom: 20px;
+}
+
+.metricCard {
+min-width: 0;
+min-height: 142px;
+padding: 20px;
+box-sizing: border-box;
+
+border: 1px solid #e9e9e9;
+border-radius: 10px;
+background: #fff;
+
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.035);
+
+transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+}
+
+.metricCard {
+transform: translateY(-2px);
+box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.metricHead {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 10px;
+}
+
+.iconWrap {
+width: 38px;
+height: 38px;
+
+display: flex;
+align-items: center;
+justify-content: center;
+
+border-radius: 8px;
+
+}
+
+.trend {
+display: inline-flex;
+align-items: center;
+gap: 3px;
+
+color: #16a34a;
+font-size: 12px;
+font-weight: 500;
+
+}
+
+.metricTitle {
+margin: 17px 0 5px;
+
+color: #777;
+font-size: 13px;
+font-weight: 500;
+
+}
+
+.metricValue {
+margin: 0;
+
+color: #171717;
+font-size: 24px;
+line-height: 1.25;
+font-weight: 650;
+
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+
+}
+
+/* =========================
+CARD COLORS
+========================= */
+
+.cardBlue .iconWrap {
+color: #2563eb;
+background: #eff6ff;
+}
+
+.cardGreen .iconWrap {
+color: #16a34a;
+background: #f0fdf4;
+}
+
+.cardOrange .iconWrap {
+color: #ea580c;
+background: #fff7ed;
+}
+
+.cardPurple .iconWrap {
+color: #9333ea;
+background: #faf5ff;
+}
+
+.cardTeal .iconWrap {
+color: #0f766e;
+background: #f0fdfa;
+}
+
+.cardRose .iconWrap {
+color: #e11d48;
+background: #fff1f2;
+}
+
+/* =========================
+MAIN SECTIONS
+========================= */
+
+.sectionGrid {
+display: grid;
+grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+gap: 20px;
+}
+
+.panel {
+min-width: 0;
+
+background: #fff;
+border: 1px solid #e9e9e9;
+border-radius: 10px;
+
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.035);
+overflow: hidden;
+
+}
+
+.panelHeader {
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+min-height: 60px;
+padding: 0 20px;
+
+border-bottom: 1px solid #eee;
+
+}
+
+.panelHeader h2 {
+margin: 0;
+
+color: #222;
+font-size: 15px;
+font-weight: 600;
+
+}
+
+/* =========================
+REVENUE CHART
+========================= */
+
+.chartWrap {
+height: 330px;
+padding: 25px 24px 20px;
+box-sizing: border-box;
+}
+
+.chartBars {
+width: 100%;
+height: 100%;
+
+display: grid;
+grid-template-columns: repeat(6, minmax(0, 1fr));
+align-items: stretch;
+
+gap: 16px;
+
+}
+
+.barGroup {
+min-width: 0;
+
+display: flex;
+flex-direction: column;
+align-items: center;
+
+}
+
+.barValue {
+width: 100%;
+min-height: 38px;
+
+display: flex;
+align-items: flex-start;
+justify-content: center;
+
+color: #555;
+font-size: 11px;
+font-weight: 500;
+
+text-align: center;
+line-height: 1.35;
+
+overflow: hidden;
+text-overflow: ellipsis;
+
+}
+
+.barContainer {
+position: relative;
+
+width: 100%;
+max-width: 54px;
+flex: 1;
+
+display: flex;
+align-items: flex-end;
+justify-content: center;
+
+margin-bottom: 12px;
+
+border-radius: 6px 6px 0 0;
+background:
+    repeating-linear-gradient(
+        to top,
+        #f8f8f8 0,
+        #f8f8f8 1px,
+        transparent 1px,
+        transparent 25%
+    );
+
+}
+
+.bar {
+width: 100%;
+min-height: 2px;
+
+border-radius: 6px 6px 2px 2px;
+
+transition:
+    height 0.35s ease,
+    opacity 0.2s ease;
+
+}
+
+.bar {
+opacity: 0.82;
+}
+
+.barLabel {
+color: #777;
+font-size: 12px;
+font-weight: 500;
+text-transform: capitalize;
+}
+
+/* =========================
+ORDER STATUS
+========================= */
+
+.statusList {
+padding: 10px 20px 15px;
+}
+
+.statusItem {
+min-height: 56px;
+
+display: flex;
+align-items: center;
+justify-content: space-between;
+
+border-bottom: 1px solid #f0f0f0;
+
+}
+
+.statusItem {
+border-bottom: none;
+}
+
+.statusMeta {
+display: flex;
+align-items: center;
+gap: 10px;
+
+color: #555;
+font-size: 13px;
+font-weight: 500;
+
+}
+
+.statusDot {
+width: 8px;
+height: 8px;
+
+flex: 0 0 auto;
+
+border-radius: 50%;
+
+}
+
+.statusItem strong {
+color: #222;
+font-size: 14px;
+font-weight: 600;
+}
+
+/* =========================
+LOADING / ERROR
+========================= */
+
+.loading {
+min-height: 500px;
+
+display: flex;
+align-items: center;
+justify-content: center;
+
+color: #777;
+font-size: 14px;
+
+}
+
+.emptyState {
+min-height: 500px;
+
+display: flex;
+align-items: center;
+justify-content: center;
+
+color: #777;
+font-size: 14px;
+
+}
