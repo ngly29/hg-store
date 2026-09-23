@@ -1,0 +1,35 @@
+.container {
+    width: 100%;
+}
+
+.title {
+    padding: 24px;
+}
+
+.title h1 {
+    line-height: 20px;
+    font-size: 24px;
+    color: #666666;
+    margin-bottom: 10px;
+}
+
+/* page.module.css */
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Container loading */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px 20px;
+    font-size: 16px;
+    color: #555;
+}

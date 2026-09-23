@@ -16,7 +16,7 @@ const menuItems = [
 ]
 export default function SideBarAdmin(){
     const pathname = usePathname();
-    const { user, logout } = useAuthStore();
+    const { logout } = useAuthStore();
     const router = useRouter();
     const handleLogout = () => {
         logout();

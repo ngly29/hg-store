@@ -1,3 +1,91 @@
 .container {
     width: 100%;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: #fff;
+    transition: all 0.3s ease;
 }
+
+.wrapper {
+    margin: 0 auto;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand {
+    font-size: 25px;
+    line-height: 20px;
+    font-weight: 600;
+}
+
+.menu {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px
+}
+
+.menu p {
+    font-size: 20px;
+    line-height: 16px;
+}
+
+.action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.hamburger {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color:#111;
+    padding: 4px;
+}
+
+.mobileMenu {
+    display: none;
+}
+
+@media (max-width:768px){
+    .menu {
+        display: none;
+    }
+
+    .hamburger{
+        display: flex;
+    }
+
+    .mobileMenu {
+        display: flex;
+        flex-direction: column;
+        margin-top: 16px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+        position: sticky;
+        background: #fff;
+    }
+
+    .mobileNavItem {
+        padding: 14px 8px;
+        font-weight: 500;
+        text-decoration: none;
+        border-bottom: 1px solid #f2f2f2;
+    }
+
+    .mobileNavItem.active {
+        color: red;
+    }
+}
+
