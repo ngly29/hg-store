@@ -5,6 +5,12 @@ export function proxy(request: NextRequest){
     const role = request.cookies.get('role')?.value;
     const {pathname} = request.nextUrl;
 
+    // Public routes: website, product list, product detail, login page
+    const publicRoutes = ['/', '/login', '/register'];
+    if (publicRoutes.includes(pathname) || pathname.startsWith('/products') || pathname.startsWith('/product')) {
+        return NextResponse.next();
+    }
+
     // Cho phép /admin/login không cần token
     if(pathname === '/admin/login'){
         return NextResponse.next();
@@ -20,7 +26,7 @@ export function proxy(request: NextRequest){
         }
     }
 
-    // Chặn route user
+    // Chỉ chặn các route thao tác cần login: cart, checkout, orders
     const protectedRoutes = ['/cart', '/checkout', '/orders'];
     if(protectedRoutes.some((route) => pathname.startsWith(route))) {
         if(!token){
@@ -32,6 +38,11 @@ export function proxy(request: NextRequest){
 
 export const config = {
     matcher: [
+        '/',
+        '/login',
+        '/register',
+        '/products/:path*',
+        '/product/:path*',
         '/admin/:path*',
         '/cart/:path*',
         '/checkout/:path*',

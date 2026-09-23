@@ -17,12 +17,6 @@ export default function Home() {
     load();
   }, []);
   return(
-    // <div>
-    //   {products.map((p)=>(
-    //     <p key={p.id}>{p.name}</p>
-    //   ))}
-    // </div>
-
     /* TEST: Call api */
     JSON.stringify(products)
   )

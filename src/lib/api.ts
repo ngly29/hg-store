@@ -23,16 +23,28 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-    (response) => response.data,
-    (error) => {
-        if (error.response?.status === 401 && typeof window !== 'undefined') {
-            localStorage.removeItem('token');
-            const redirectUrl = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
-            window.location.href = redirectUrl;
-        }
+  (response) => response.data,
+  (error) => {
+    const status = error?.response?.status;
+    const url = error?.config?.url || "";
 
-        return Promise.reject(error);
+    // Đăng nhập sai: không redirect, để hook xử lý toast
+    if (status === 401 && url.includes("/auth/login")) {
+      return Promise.reject(error);
     }
+
+    // Token hết hạn / route protected
+    if (status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      const redirectUrl = window.location.pathname.startsWith("/admin")
+        ? "/admin/login"
+        : "/login";
+
+      window.location.href = redirectUrl;
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 export default api;

@@ -1,236 +1,342 @@
+/* page.module.css */
+
 .container {
-    width: 100%;
-    background: #fff;
-    padding: 8px 12px;
-    border-radius: 14px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.03);
+  width: 100%;
+  min-height: 100%;
+  padding: 8px 12px 20px;
+  box-sizing: border-box;
+  color: #171717;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
+/* =========================
+   HEADER
+========================= */
 
 .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 16px;
-    gap: 20px;
-    padding-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
 }
 
-.title {
-    font-weight: 700;
-    color: #111827;
-    margin: 0;
+.title h1 {
+  margin: 0;
+  color: #171717;
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 650;
+  letter-spacing: -0.3px;
 }
 
 .action {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+/* =========================
+   SEARCH
+========================= */
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search input {
+  width: 300px;
+  height: 36px;
+  padding: 0 34px 0 12px;
+  border: 1px solid #e9e9e9;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #171717;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search input::placeholder {
+  color: #999;
+}
+
+.search input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search svg {
+  position: absolute;
+  right: 10px;
+  width: 15px;
+  height: 15px;
+  color: #888;
+  pointer-events: none;
+}
+
+/* =========================
+   CREATE BUTTON
+========================= */
+
 .create {
-    padding: 10px 16px;
-    background: linear-gradient(135deg, #374151, #1f2937);
-    border-radius: 10px;
-    cursor: pointer;
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+  white-space: nowrap;
 }
 
 .create:hover {
-    background: linear-gradient(135deg, #1f2937, #111827);
+  background: #1d4ed8;
 }
 
+.create:active {
+  transform: translateY(1px);
+}
+
+/* =========================
+   TABLE WRAPPER
+========================= */
+
+.table {
+  background-color: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.035);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+/* =========================
+   PRODUCT NAME LINK
+========================= */
+
+.productNameLink {
+  color: #171717;
+  font-weight: 600;
+  font-size: 13.5px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  line-height: 1.4;
+  display: inline-block;
+}
+
+.productNameLink:hover {
+  color: #2563eb;
+}
+
+/* =========================
+   STATUS PILLS
+========================= */
+
+.published,
+.hidden {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+  transition: background 0.15s ease;
+}
+
+.published {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border-color: rgba(22, 163, 74, 0.2);
+}
+
+.published:hover {
+  background-color: #dcfce7;
+}
+
+.hidden {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.hidden:hover {
+  background-color: #fee2e2;
+}
+
+/* =========================
+   ACTION GROUP
+========================= */
+
 .actionGroup {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .detailBtn,
 .editBtn,
 .deleteBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 34px;
-    padding: 0 12px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .detailBtn {
-    background: #f3f4f6;
-    border-color: #e5e7eb;
-    color: #374151;
+  background-color: #f8fafc;
+  color: #555;
+  border-color: #e9e9e9;
+}
+
+.detailBtn:hover {
+  background-color: #eef2f7;
+  border-color: #d7dee8;
+  color: #171717;
 }
 
 .editBtn {
-    background: #f9fafb;
-    border-color: #e5e7eb;
-    color: #374151;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.editBtn:hover {
+  background-color: #dbeafe;
+  border-color: rgba(37, 99, 235, 0.35);
 }
 
 .deleteBtn {
-    background: #f5f5f4;
-    border-color: #e5e7eb;
-    color: #4b5563;
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.2);
 }
 
-.search {
-    position: relative;
-    display: flex;
-    align-items: center;
+.deleteBtn:hover {
+  background-color: #fee2e2;
+  border-color: rgba(220, 38, 38, 0.35);
 }
 
-.search input {
-    width: 260px;
-    max-width: 100%;
-    height: 40px;
-    padding: 0 40px 0 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    outline: none;
-    font-size: 14px;
-    background: #f9fafb;
+/* =========================
+   STATES
+========================= */
+
+.empty {
+  padding: 50px 20px;
+  text-align: center;
+  color: #777;
+  font-size: 13.5px;
+  font-weight: 500;
 }
 
-.search input:focus {
-    border-color: #374151;
-    box-shadow: 0 0 0 3px rgba(55, 65, 81, 0.08);
+.loading,
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.search svg {
-    position: absolute;
-    right: 12px;
-    width: 18px;
-    height: 18px;
-    color: #6b7280;
-    pointer-events: none;
+.loading {
+  color: #777;
 }
 
-.table {
-    width: 100%;
-    overflow: hidden;
+.error {
+  color: #dc2626;
 }
+
+/* =========================
+   PAGINATION
+========================= */
 
 .pagination {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 4px 4px;
-    margin-top: 15px;
-    gap: 12px;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background-color: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.035);
 }
 
 .paginationInfo {
-    font-size: 14px;
-    color: #6b7280;
+  font-size: 13px;
+  color: #777;
+  font-weight: 500;
 }
 
 .paginationControls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .pageSize {
-    height: 38px;
-    padding: 0 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    background: #fff;
-    color: #111827;
-    font-size: 14px;
-    outline: none;
-    cursor: pointer;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #e9e9e9;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #555;
+  font-size: 12.5px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.pageSize:hover {
+  border-color: #d7dee8;
 }
 
 .pageSize:focus {
-    border-color: #374151;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .pageBtn {
-    min-width: 40px;
-    height: 38px;
-    padding: 0 12px;
-    border: none;
-    border-radius: 10px;
-    background: #f3f4f6;
-    color: #111827;
-    font-size: 14px;
-    cursor: pointer;
-    transition: 0.15s ease;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid #e9e9e9;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #555;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .pageBtn:hover:not(:disabled) {
-    background: #e5e7eb;
-    color: #111827;
-}
-
-.pageBtn.active {
-    background: linear-gradient(135deg, #374151, #1f2937);
-    border-color: transparent;
-    color: white;
+  background-color: #eff6ff;
+  border-color: rgba(37, 99, 235, 0.3);
+  color: #2563eb;
 }
 
 .pageBtn:disabled {
-    color: #9ca3af;
-    background: #f3f4f6;
-    cursor: not-allowed;
-}
-
-.ellipsis {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 30px;
-    height: 36px;
-    color: #6b7280;
-    font-size: 14px;
-}
-
-.productNameLink {
-    color: #111827;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.productNameLink:hover {
-    color: #374151;
-}
-
-.published {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 12px;
-    background: #e5e7eb;
-    color: #1f2937;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.hidden {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 12px;
-    background: #f3f4f6;
-    color: #4b5563;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
+  opacity: 0.45;
+  cursor: not-allowed;
+  color: #999;
 }

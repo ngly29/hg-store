@@ -1,457 +1,668 @@
+/* CreateProduct.module.css */
+
+/* =========================
+   CONTAINER
+========================= */
+
 .container {
-    width: 100%;
-    background: #fff;
-    padding: 8px 12px;
-    border-radius: 8px;
+  width: 100%;
+  min-height: 100%;
+  padding: 6px 10px 16px;
+  box-sizing: border-box;
+  color: #171717;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* =========================
+   HEADER
+========================= */
+
 .header {
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 15px;
-    gap: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.headerLeft {
+  min-width: 0;
 }
 
 .title {
-    font-weight: 600;
-    color: #222;
-    margin-bottom: 15px;
+  margin: 0;
+
+  color: #171717;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 650;
+  letter-spacing: -0.2px;
 }
+
+/* =========================
+   FORM WRAPPER — 1 khối liền mạch
+========================= */
 
 .form {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.035);
+  overflow: hidden;
 }
+
+/* =========================
+   SECTION — phân tách bằng đường kẻ
+========================= */
 
 .section {
-    background: #f8fafc;
-    border: 1px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 18px 20px;
+  padding: 14px;
 }
 
-.sectionTitle {
-    margin: 0 0 16px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #111827;
-}
-
-.mainLayout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
-    gap: 24px;
-    align-items: start;
-}
-
-.leftPanel,
-.rightPanel {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.field,
-.fieldFull {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.fieldFull {
-    width: 100%;
-}
-
-.label {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #374151;
-}
-
-.required {
-    color: #ef4444;
-}
-
-.input,
-.select,
-.textarea,
-.inputSmall {
-    width: 100%;
-    border: 1px solid #dfe5ec;
-    background: #fff;
-    border-radius: 10px;
-    color: #111827;
-    font-size: 0.95rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.input,
-.select {
-    height: 44px;
-    padding: 0 14px;
-}
-
-.textarea {
-    min-height: 120px;
-    padding: 12px 14px;
-    resize: vertical;
-}
-
-.imageSection {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.coverUpload {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-height: 190px;
-    padding: 10px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    border-radius: 12px;
-}
-
-.fileInput,
-.galleryInput,
-.fileInputSmall {
-    width: 100%;
-    border: 1px dashed #cbd5e1;
-    border-radius: 10px;
-    background: #fff;
-    padding: 8px 10px;
-    font-size: 0.8rem;
-    color: #475569;
-}
-
-.previewWrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 140px;
-    max-height: 140px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #f8fafc;
-    border: 1px solid #e5e7eb;
-}
-
-.preview {
-    display: block;
-    width: 100%;
-    max-width: 170px;
-    max-height: 140px;
-    height: 140px;
-    object-fit: cover;
-    object-position: center;
-    border-radius: 10px;
-}
-
-.emptyImageBox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 140px;
-    border: 1px dashed #dfe5ec;
-    border-radius: 12px;
-    color: #94a3b8;
-    background: #f8fafc;
-    font-size: 0.85rem;
-}
-
-.galleryGrid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-}
-
-.galleryItem {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 86px;
-    max-height: 86px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background: #fff;
-    overflow: hidden;
-}
-
-.galleryInput {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
-}
-
-.galleryThumb {
-    width: 100%;
-    height: 100%;
-    max-height: 86px;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-    position: relative;
-    z-index: 1;
-}
-
-.galleryPlaceholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    font-size: 2rem;
-    color: #94a3b8;
-    background: #f8fafc;
-    position: relative;
-    z-index: 1;
-}
-
-.removeImageButton,
-.removeGalleryButton {
-    position: absolute;
-    z-index: 3;
-    border: none;
-    border-radius: 999px;
-    background: rgba(15, 23, 42, 0.76);
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-}
-
-.removeImageButton {
-    top: 8px;
-    right: 8px;
-    padding: 5px 10px;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
-}
-
-.removeGalleryButton {
-    top: 6px;
-    right: 6px;
-    padding: 5px 8px;
-    max-width: calc(100% - 12px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
+.section + .section {
+  border-top: 1px solid #f0f0f0;
 }
 
 .sectionHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-.btnAddVariant {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: none;
-    background: transparent;
-    color: #2563eb;
-    font-size: 0.96rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0;
+.sectionTitle {
+  margin: 0 0 10px;
+
+  color: #333;
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
 }
 
-.emptyVariants {
-    padding: 24px 12px;
-    border: 1px dashed #d7dfe9;
-    border-radius: 12px;
-    text-align: center;
-    color: #64748b;
-    background: #fff;
+.sectionHeader .sectionTitle {
+  margin: 0;
 }
 
-.tableWrapper {
-    width: 100%;
-    overflow-x: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    background: #fff;
+/* =========================
+   MAIN LAYOUT (2 cột)
+========================= */
+
+.mainLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: start;
 }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 820px;
+.leftPanel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.table th,
-.table td {
-    padding: 14px 12px;
-    border-bottom: 1px solid #edf2f7;
-    text-align: left;
-    vertical-align: middle;
+.rightPanel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.table thead th {
-    background: #f8fafc;
-    color: #475569;
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+/* =========================
+   FIELD
+========================= */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 
-.table tbody tr:last-child td {
-    border-bottom: none;
+.fieldFull {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  grid-column: 1 / -1;
+}
+
+.label {
+  display: block;
+
+  color: #555;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.required {
+  color: #dc2626;
+}
+
+/* =========================
+   INPUTS
+========================= */
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 8px 11px;
+
+  color: #171717;
+  font-size: 13px;
+  font-family: inherit;
+
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 8px;
+  outline: none;
+
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: #aaa;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  padding-right: 32px;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.55;
 }
 
 .inputSmall {
-    height: 40px;
-    padding: 0 12px;
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 6px 9px;
+
+  color: #171717;
+  font-size: 12.5px;
+  font-family: inherit;
+
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 6px;
+  outline: none;
+
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.btnRemoveVariant {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border: 1px solid #dfe5ec;
-    border-radius: 8px;
-    background: #fff;
-    color: #475569;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.inputSmall:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.btnRemoveVariant:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-}
+/* =========================
+   TOGGLE (Trạng thái)
+========================= */
 
 .toggleRow {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
 }
 
 .publishToggle {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    width: 62px;
-    height: 32px;
-    border: none;
-    border-radius: 999px;
-    padding: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  position: relative;
+
+  width: 38px;
+  height: 20px;
+
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+  padding: 0;
 }
 
 .publishToggleOn {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
+  background: #2563eb;
 }
 
 .publishToggleOff {
-    background: linear-gradient(135deg, #e5e7eb, #cbd5e1);
+  background: #cbd5e1;
 }
 
 .publishToggleThumb {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
-    transition: transform 0.2s ease;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+
+  width: 16px;
+  height: 16px;
+
+  background: #fff;
+  border-radius: 50%;
+
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+  transition: transform 0.2s ease;
 }
 
 .publishToggleOn .publishToggleThumb {
-    transform: translateX(30px);
-}
-
-.publishToggleOff .publishToggleThumb {
-    transform: translateX(0);
+  transform: translateX(18px);
 }
 
 .publishToggleText {
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #334155;
+  color: #555;
+  font-size: 12.5px;
+  font-weight: 500;
 }
+
+/* =========================
+   IMAGE SECTION
+========================= */
+
+.imageSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coverUpload {
+  position: relative;
+}
+
+.fileInput {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 6px 8px;
+
+  color: #555;
+  font-size: 12px;
+  font-family: inherit;
+
+  background: #fafbfc;
+  border: 1px dashed #d7dee8;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.fileInput::file-selector-button {
+  margin-right: 8px;
+  padding: 4px 10px;
+
+  color: #171717;
+  font-size: 12px;
+  font-weight: 500;
+
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.fileInput::file-selector-button:hover {
+  background: #f1f5f9;
+}
+
+.previewWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preview {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+
+  border: 1px solid #e9e9e9;
+  border-radius: 8px;
+  background: #fafafa;
+  display: block;
+}
+
+.removeImageButton {
+  align-self: flex-start;
+
+  padding: 5px 10px;
+
+  color: #dc2626;
+  font-size: 11.5px;
+  font-weight: 600;
+
+  background: #fef2f2;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+.removeImageButton:hover {
+  background: #fee2e2;
+}
+
+.emptyImageBox {
+  padding: 24px 12px;
+
+  text-align: center;
+
+  color: #999;
+  font-size: 12.5px;
+
+  border: 1px dashed #d7dee8;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+/* =========================
+   GALLERY GRID
+========================= */
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.galleryItem {
+  position: relative;
+
+  width: 100%;
+  aspect-ratio: 1 / 1;
+
+  border: 1px dashed #d7dee8;
+  border-radius: 8px;
+  overflow: hidden;
+
+  background: #fafafa;
+  cursor: pointer;
+
+  transition: border-color 0.15s ease;
+}
+
+.galleryItem:hover {
+  border-color: #2563eb;
+}
+
+.galleryInput {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.galleryThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.galleryPlaceholder {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #cbd5e1;
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.removeGalleryButton {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+
+  padding: 4px 6px;
+
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 600;
+
+  background: rgba(220, 38, 38, 0.9);
+  border: none;
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+.removeGalleryButton:hover {
+  background: rgba(185, 28, 28, 0.95);
+}
+
+/* =========================
+   ADD VARIANT BUTTON
+========================= */
+
+.btnAddVariant {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  height: 30px;
+  padding: 0 11px;
+
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+.btnAddVariant:hover {
+  background: #dbeafe;
+}
+
+/* =========================
+   VARIANT TABLE
+========================= */
+
+.tableWrapper {
+  width: 100%;
+
+  border: 1px solid #e9e9e9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.table thead {
+  background: #fafbfc;
+}
+
+.table th {
+  padding: 8px 10px;
+
+  text-align: left;
+
+  color: #666;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+
+  border-bottom: 1px solid #e9e9e9;
+
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 6px 8px;
+
+  border-bottom: 1px solid #f0f0f0;
+
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.btnRemoveVariant {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+
+  color: #dc2626;
+
+  background: #fef2f2;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+
+  transition: background 0.15s ease;
+}
+
+.btnRemoveVariant:hover {
+  background: #fee2e2;
+}
+
+.emptyVariants {
+  padding: 20px 14px;
+
+  text-align: center;
+
+  color: #888;
+  font-size: 12.5px;
+
+  border: 1px dashed #e9e9e9;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+/* =========================
+   ACTIONS
+========================= */
 
 .actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
-    padding-top: 14px;
-}
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 
-.btnCancel,
-.btnSubmit {
-    height: 44px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.97rem;
-    transition: all 0.2s ease;
-    cursor: pointer;
+  padding: 12px 14px;
+
+  border-top: 1px solid #f0f0f0;
+  background: #fafbfc;
 }
 
 .btnCancel {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 18px;
-    border: 1px solid #dfe5ec;
-    background: #fff;
-    color: #374151;
-    text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 32px;
+  padding: 0 14px;
+
+  color: #555;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 8px;
+
+  transition: all 0.15s ease;
+}
+
+.btnCancel:hover {
+  background: #f8fafc;
+  border-color: #d7dee8;
+  color: #171717;
 }
 
 .btnSubmit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 22px;
-    border: none;
-    background: #0099FF;
-    color: #fff;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  height: 32px;
+  padding: 0 16px;
+
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+
+  background: #2563eb;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  transition: background 0.15s ease;
 }
 
-.btnSubmit:hover{
-    background: #0584da;
+.btnSubmit:hover:not(:disabled) {
+  background: #1d4ed8;
 }
 
 .btnSubmit:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .spinner {
-    width: 16px;
-    height: 16px;
-    animation: spin 0.8s linear infinite;
+  width: 14px;
+  height: 14px;
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingState {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #777;
+  font-size: 13px;
+  font-weight: 500;
 }
