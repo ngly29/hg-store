@@ -1,11 +1,12 @@
 "use client";
 
 import { productApi } from "@/lib/productApi";
+import { getProductImageUrl } from "@/lib/productImage";
 import { ProductResponse } from "@/types/product";
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
+import Link from "next/link";
 
 export default function ProductPage() {
     const [products, setProducts] = useState<ProductResponse[]>([]);
@@ -38,15 +39,26 @@ export default function ProductPage() {
 
                 <div className={styles.displayProducts}>
                     {products.map((product) => (
-                        <div key={product.id} className={styles.productCard}>
+                        <Link href={`/products/${product.id}`} key={product.id} className={styles.productCard}>
                             <div className={styles.productImage}>
-                                <Image alt={product.name} src={product.imgUrl || "/images/placeholder.png"} width={200} height={200}/>
+                                <img
+                                    alt={product.name}
+                                    src={getProductImageUrl(product)}
+                                    style={{
+                                        maxWidth: "100%",
+                                        maxHeight: "100%",
+                                        objectFit: "contain",
+                                        transition: "transform 0.4s ease-in-out",
+                                    }}
+                                    onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+                                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                                />
                             </div>
                             <div className={styles.info}>
-                                <p>{product.name}</p>
-                                <span>{product.price}</span>
+                                <h3>{product.name}</h3>
+                                <span><b>{product.price.toLocaleString('vi-VN')} đ</b></span>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </div>

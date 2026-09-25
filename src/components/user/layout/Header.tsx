@@ -5,12 +5,13 @@ import styles from "./Header.module.css";
 import { Menu, Search, ShoppingBag, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 
 const menuItems = [
     { href: '/', label: 'HOME'},
     { href: '/about', label: 'ABOUT' },
     { href: '/categories', label: 'CATEGORIES' },
-    { href: '/account', label:'ACCOUNT' }
+    { href: '/login', label:'ACCOUNT' }
 ]
 export default function HeaderUser() {
     const pathname = usePathname();
@@ -20,7 +21,8 @@ export default function HeaderUser() {
             <div className={styles.wrapper}>
                 <div className={styles.header}>
                     <div className={styles.brand}>
-                        <Link href="/"><p>HUGAN</p></Link>
+                        <Link href="/"><Image alt="logo" src="https://hugan.vn/wp-content/uploads/2026/09/logo-toi-uu-website-1400x788.png.webp" 
+                        width={100} height={50} /></Link>
                     </div>
                     <div className={styles.menu}>
                         {menuItems.map((item) => {

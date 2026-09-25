@@ -9,6 +9,7 @@ import { ProductResponse } from "@/types/product";
 import Table, {Column} from "@/components/table/page";
 import { Search } from "lucide-react";
 import Link from "next/link";
+import { getProductImageUrl } from "@/lib/productImage";
 
 export default function ProductPage(){
     const { addNotification } = useNotification();
@@ -55,8 +56,7 @@ export default function ProductPage(){
             key: "imgUrl",
             title: "Ảnh",
             render: (product: ProductResponse) => {
-                const primaryImage = product.images?.find((image) => image.isPrimary) ?? product.images?.[0];
-                const imageUrl = primaryImage?.imageData || product.imgUrl || '';
+                const imageUrl = getProductImageUrl(product);
 
                 return (
                     <img

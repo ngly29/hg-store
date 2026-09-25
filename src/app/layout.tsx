@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import Notification from "@/components/notification/Notification";
 import QueryProviders from '@/providers/QueryProvider';
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// Cấu hình Font chữ Inter chuẩn hỗ trợ tiếng Việt mượt mà
+const nunitoSans = Nunito_Sans({                    
+    subsets: ["latin", "vietnamese"],               
+    weight: ["400", "500", "600", "700", "800"],
+    variable: "--font-nunito-sans",                 
+    display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -20,8 +19,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>
+    <html lang="en" className={nunitoSans.variable}>
+      <body className="font-sans antialiased bg-gray-50 text-gray-900">
         <QueryProviders>
             {children}
           <Notification/>

@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
             <div className={styles.cardLeft}>
                 <Paintbrush/>
                 <h1>MY LIFE MY COLOR</h1>
-                <p>Copyright &copy; HUGAN {new Date().getFullYear()}</p>
+                <p>Copyright &copy; {new Date().getFullYear()} CÔNG TY CP HUGAN VIỆT NAM.</p>
             </div>
             <div className={styles.cardRight}>
                 <div className={styles.header}>

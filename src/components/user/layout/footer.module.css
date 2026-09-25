@@ -1,0 +1,48 @@
+.container {
+    width: 100%;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    background-color: #fff;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+}
+
+.wrapper{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.socialMedia {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px
+}
+
+.copyright {
+    text-align: center;
+    border-top: 1px solid black;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.copyright p {
+    margin-top: 25px
+}
+
+@media (max-width: 768px){
+    .socialMedia{display: none;}
+    .brand{
+        margin: 0 auto;
+    }
+    .brand img {
+        width: 100px;
+        height: auto;
+    }
+    .copyright p {
+        font-size: 14px;
+    }
+}
