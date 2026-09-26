@@ -1,485 +1,184 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-
 import { productApi } from "@/lib/productApi";
-import { ProductImageResponse } from "@/types/product";
-
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import styles from "./page.module.css";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
-const getImageSrc = (
-  imageData: string | null,
-  contentType: string | null
-) => {
-  if (!imageData) return "";
-
-  if (imageData.startsWith("data:")) {
-    return imageData;
-  }
-
-  return `data:${contentType};base64,${imageData}`;
-};
-
-export default function ProductDetailPage() {
-  const params = useParams();
-
-  const id = Number(params.id);
-
-  // =========================
-  // STATE
-  // =========================
-
-  const [selectedImage, setSelectedImage] =
-    useState<ProductImageResponse | null>(null);
-
-  const [selectedColor, setSelectedColor] = useState("");
-
-  const [selectedSize, setSelectedSize] = useState("");
-
+export default function ProductDetail(){
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-
-  // =========================
-  // GET PRODUCT
-  // =========================
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const params = useParams();
+  const id = Number(params.id);
 
   const {
     data: product,
     isLoading,
     isError,
+    error
   } = useQuery({
     queryKey: ["product", id],
     queryFn: () => productApi.getById(id),
-    enabled: Number.isInteger(id) && id > 0,
+    enabled: !!id,
   });
+  // Ảnh
+  const getImageSrc = (
+    imageData: string | null,
+    contentType: string | null
+  ) => {
+    if(!imageData) return "";
 
-  // =========================
-  // SET PRIMARY IMAGE
-  // =========================
-
-  useEffect(() => {
-    if (!product?.images?.length) {
-      setSelectedImage(null);
-      return;
+    if(imageData.startsWith("data")) {
+      return imageData;
     }
 
-    const primaryImage =
-      product.images.find(
-        (image) => image.isPrimary === true
-      ) ?? product.images[0];
-
-    setSelectedImage(primaryImage);
-  }, [product]);
-
-  // =========================
-  // LOADING / ERROR
-  // =========================
-
-  if (isLoading) {
-    return (
-      <main className={styles.container}>
-        <p>Đang tải sản phẩm...</p>
-      </main>
-    );
+    return `data:${contentType};base64,${imageData}`;
   }
-
-  if (isError || !product) {
-    return (
-      <main className={styles.container}>
-        <p>Không tìm thấy sản phẩm.</p>
-      </main>
+  // Màu sản phẩm
+  const colors = useMemo(() => {
+    return Array.from(
+      new Set(product?.variants?.map((variant) => variant.color).filter(Boolean))
     );
-  }
+  }, [product?.variants]);
 
-  // =========================
-  // COLORS
-  // =========================
+  // Size 
+  const sizes = useMemo(() => {
+    return Array.from(
+      new Set(
+        product?.variants?.map((variant) => variant.size).filter(Boolean)
+      )
+    );
+  }, [product?.variants]);
 
-  const colors = [
-    ...new Set(
-      product.variants?.map(
-        (variant) => variant.color
-      ) ?? []
-    ),
-  ];
+  const selectVariant = useMemo(() => {
+    if(!selectedColor || !selectedSize){
+      return null;
+    }
 
-  // =========================
-  // SIZES
-  // =========================
-
-  const sizes = [
-    ...new Set(
-      product.variants?.map(
-        (variant) => variant.size
-      ) ?? []
-    ),
-  ];
-
-  // =========================
-  // SELECTED VARIANT
-  // =========================
-
-  const selectedVariant = product.variants?.find(
-    (variant) =>
-      variant.color === selectedColor &&
+    return product?.variants?.find(
+      (variant) => variant.color === selectedColor && 
       variant.size === selectedSize
-  );
-
-  // =========================
-  // DISPLAY PRICE
-  // =========================
-
-  const displayPrice =
-    selectedVariant?.price ?? product.price;
-
-  // =========================
-  // CHECK SIZE AVAILABLE
-  // =========================
-
-  const isSizeAvailable = (size: string) => {
-    // Nếu chưa chọn màu thì tất cả size
-    // vẫn có thể được chọn
-    if (!selectedColor) {
-      return product.variants?.some(
-        (variant) =>
-          variant.size === size &&
-          variant.stock > 0
-      );
-    }
-
-    return product.variants?.some(
-      (variant) =>
-        variant.color === selectedColor &&
-        variant.size === size &&
-        variant.stock > 0
-    );
-  };
-
-  // =========================
-  // SELECT COLOR
-  // =========================
-
-  const handleSelectColor = (color: string) => {
-    setSelectedColor(color);
-
-    // Reset size vì variant có thể thay đổi
-    setSelectedSize("");
-
-    // Reset quantity
+    ) ?? null;
+  }, [product?.variants, selectedColor, selectedSize]);
+  //Reset về 1
+  useEffect(() => {
     setQuantity(1);
-  };
-
-  // =========================
-  // SELECT SIZE
-  // =========================
-
-  const handleSelectSize = (size: string) => {
-    if (!isSizeAvailable(size)) {
-      return;
-    }
-
-    setSelectedSize(size);
-
-    // Reset quantity khi đổi variant
-    setQuantity(1);
-  };
-
-  // =========================
-  // DECREASE QUANTITY
-  // =========================
-
-  const handleDecreaseQuantity = () => {
+  }, [selectVariant?.id]);
+  // Giảm số lượng
+  const decreaseQuantity = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
   };
+  // Tăng số lượng
+  const increaseQuantity = () => {
+    if(!selectVariant) return;
 
-  // =========================
-  // INCREASE QUANTITY
-  // =========================
-
-  const handleIncreaseQuantity = () => {
-    if (!selectedVariant) {
-      return;
-    }
-
-    if (quantity >= selectedVariant.stock) {
-      return;
-    }
-
-    setQuantity((prev) => prev + 1);
+    setQuantity((prev) => 
+    Math.min(selectVariant.stock, prev + 1));
   };
 
-  // =========================
-  // ADD TO CART
-  // =========================
+  // Chuyển ảnh
+  const nextImage = () => {
+    const images = product?.images;
 
-  const handleAddToCart = () => {
-    if (!selectedVariant) {
-      alert("Vui lòng chọn màu và kích thước.");
-      return;
-    }
+    if (!images || images.length === 0) return;
 
-    if (selectedVariant.stock <= 0) {
-      alert("Sản phẩm đã hết hàng.");
-      return;
-    }
-
-    if (quantity > selectedVariant.stock) {
-      alert("Số lượng sản phẩm không đủ.");
-      return;
-    }
-
-    const cartItem = {
-      productId: product.id,
-      variantId: selectedVariant.id,
-      quantity,
-    };
-
-    console.log("Cart item:", cartItem);
-
-    alert("Đã thêm sản phẩm vào giỏ hàng.");
+    setCurrentImageIndex((prev) =>
+      prev === images.length - 1 ? 0 : prev + 1
+    );
   };
 
+  const previousImage = () => {
+    const images = product?.images;
+
+    if (!images || images.length === 0) return;
+
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? images.length - 1 : prev - 1
+    );
+  };
+
+  if(isLoading) return <div className={styles.isLoading}>Đang tải dữ liệu...</div>
+
+  if(isError) return <div className={styles.isError}>Không thể tải dữ liệu!</div>
+
+  if(!product) return <div className={styles.notFoundProduct}>Không tìm thấy sản phẩm!</div>
+  
   return (
-    <main className={styles.container}>
-      <div className={styles.productDetail}>
+    <div className={styles.container}>
+      <div className={styles.titleHeader}>
+          <Link href="/">Home</Link>/
+          <p>{product.name}</p>
+      </div>
+      <div className={styles.wrapper}>
 
-        {/* =========================
-            IMAGE SECTION
-        ========================= */}
-
-        <div className={styles.imageSection}>
-
-          {/* MAIN IMAGE */}
-
-          <div className={styles.mainImage}>
-            {selectedImage ? (
+        <div className={styles.imageGallery}>
+          {product.images && product.images.length > 0 && (
+            product.images.map((image) => (
               <img
+                key={image.id}
                 src={getImageSrc(
-                  selectedImage.imageData,
-                  selectedImage.contentType
+                  image.imageData,
+                  image.contentType
                 )}
                 alt={product.name}
+                className={styles.productImage}
               />
-            ) : (
-              <div>
-                Không có hình ảnh
-              </div>
-            )}
+            ))
+          )}
+        </div>
+
+        <div className={styles.info}>
+          
+          <div className={styles.title}>
+            <h1>{product.name}</h1>
+          
+            <span><b>{product.price.toLocaleString("vi-VN")} đ</b></span>
           </div>
 
-          {/* THUMBNAILS */}
-
-          {product.images &&
-            product.images.length > 0 && (
-              <div className={styles.thumbnailList}>
-                {product.images.map((image) => (
-                  <button
-                    key={image.id}
-                    type="button"
-                    onClick={() =>
-                      setSelectedImage(image)
-                    }
-                    className={
-                      selectedImage?.id === image.id
-                        ? styles.activeThumbnail
-                        : styles.thumbnail
-                    }
-                  >
-                    <img
-                      src={getImageSrc(
-                        image.imageData,
-                        image.contentType
-                      )}
-                      alt={
-                        image.fileName ??
-                        product.name
-                      }
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-        </div>
-
-        {/* =========================
-            PRODUCT INFORMATION
-        ========================= */}
-
-        <div className={styles.productInfo}>
-
-          {/* NAME */}
-
-          <h1>{product.name}</h1>
-
-          {/* CATEGORY */}
-
-          {product.categoryName && (
-            <p>
-              Danh mục: {product.categoryName}
-            </p>
-          )}
-
-          {/* PRICE */}
-
-          <p className={styles.price}>
-            {displayPrice.toLocaleString("vi-VN")}đ
-          </p>
-
-          {/* DESCRIPTION */}
-
-          {product.description && (
-            <p className={styles.description}>
-              {product.description}
-            </p>
-          )}
-
-          {/* =========================
-              COLOR
-          ========================= */}
-
-          {colors.length > 0 && (
-            <div className={styles.optionGroup}>
-              <h3>Màu</h3>
-
-              <div className={styles.options}>
-                {colors.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    className={
-                      selectedColor === color
-                        ? styles.selectedOption
-                        : styles.option
-                    }
-                    onClick={() =>
-                      handleSelectColor(color)
-                    }
-                  >
-                    {color}
-                  </button>
-                ))}
-              </div>
+          <div className={styles.optionGroups}>
+            <div className={styles.options}>
+              {colors.map((color) => (
+                <button key={color} type="button" onClick={() => setSelectedColor(color)}
+                className={selectedColor === color ? styles.selected : ""}>
+                  {color}
+                </button>
+              ))}
             </div>
-          )}
 
-          {/* =========================
-              SIZE
-          ========================= */}
-
-          {sizes.length > 0 && (
-            <div className={styles.optionGroup}>
-              <h3>Kích thước</h3>
-
-              <div className={styles.options}>
-                {sizes.map((size) => {
-                  const available =
-                    isSizeAvailable(size);
-
-                  return (
-                    <button
-                      key={size}
-                      type="button"
-                      disabled={!available}
-                      className={
-                        selectedSize === size
-                          ? styles.selectedOption
-                          : styles.option
-                      }
-                      onClick={() =>
-                        handleSelectSize(size)
-                      }
-                    >
-                      {size}
-                    </button>
-                  );
-                })}
-              </div>
+            <div className={styles.options}>
+              {sizes.map((size) => (
+                <button key={size} type="button" onClick={() => setSelectedSize(size)}
+                className={selectedSize === size ? styles.selected : ""}>
+                  {size}
+                </button>
+              ))}
             </div>
-          )}
-
-          {/* =========================
-              SELECTED VARIANT
-          ========================= */}
-
-          {selectedVariant && (
-            <div className={styles.variantInfo}>
-              <p>
-                Còn lại:{" "}
-                <strong>
-                  {selectedVariant.stock}
-                </strong>{" "}
-                sản phẩm
-              </p>
-
-              <p>
-                SKU:{" "}
-                <strong>
-                  {selectedVariant.sku}
-                </strong>
-              </p>
-            </div>
-          )}
-
-          {/* =========================
-              QUANTITY
-          ========================= */}
-
-          {selectedVariant &&
-            selectedVariant.stock > 0 && (
-              <div className={styles.quantitySection}>
-                <h3>Số lượng</h3>
-
-                <div className={styles.quantity}>
-                  <button
-                    type="button"
-                    onClick={
-                      handleDecreaseQuantity
-                    }
-                    disabled={quantity <= 1}
-                  >
-                    -
-                  </button>
-
-                  <span>{quantity}</span>
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleIncreaseQuantity
-                    }
-                    disabled={
-                      quantity >=
-                      selectedVariant.stock
-                    }
-                  >
-                    +
-                  </button>
-                </div>
+            
+            <div className={styles.quantitySection}>
+              <div className={styles.quantityControl}>
+                <button type="button" onClick={decreaseQuantity} disabled={quantity <= 1}>-</button>
+                <span>{quantity}</span>
+                <button type="button" onClick={increaseQuantity} disabled={!selectVariant || quantity >= selectVariant.stock}>+</button>
               </div>
-            )}
-
-          {/* =========================
-              ADD TO CART
-          ========================= */}
-
-          <button
-            type="button"
-            className={styles.addToCart}
-            onClick={handleAddToCart}
-            disabled={
-              !!selectedVariant &&
-              selectedVariant.stock <= 0
-            }
-          >
-            {!selectedVariant
-              ? "Chọn màu và kích thước"
-              : selectedVariant.stock <= 0
-              ? "Hết hàng"
-              : "Thêm vào giỏ hàng"}
-          </button>
+              <span className={styles.note}>
+                {selectVariant
+                  ? `Còn ${selectVariant.stock} sản phẩm`
+                  : "Vui lòng chọn màu và size"}
+              </span>
+            </div>
+          </div>
+          
+          <div className={styles.description}>
+            <p><b>Mô tả:</b></p>
+            <p>{product.description}</p>
+          </div>
         </div>
       </div>
-    </main>
-  );
+    </div>
+  )
 }
