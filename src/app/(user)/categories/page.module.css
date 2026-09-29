@@ -1,0 +1,146 @@
+.page {
+    width: min(1200px, 100%);
+    margin: 0 auto;
+    padding: 48px 32px 72px;
+}
+
+.hero {
+    max-width: 680px;
+    margin: 0 auto 48px;
+    text-align: center;
+}
+.hero h1 {
+    margin: 0;
+    color: #111;
+    font-size: clamp(30px, 5vw, 48px);
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+}
+
+.description {
+    margin: 16px 0 0;
+    color: #666;
+    font-size: 15px;
+}
+
+.categoryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid #dedede;
+    border-left: 1px solid #dedede;
+}
+
+.categoryCard {
+    min-height: 220px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    color: #111;
+    border-right: 1px solid #dedede;
+    border-bottom: 1px solid #dedede;
+    transition: background-color 0.2s ease;
+}
+
+.categoryCard:hover,
+.categoryCard:focus-visible {
+    background: #f7f7f5;
+}
+
+.categoryCard:focus-visible {
+    outline: 2px solid #111;
+    outline-offset: -2px;
+}
+
+.categoryNumber {
+    color: #888;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+}
+
+.categoryName {
+    font-size: clamp(22px, 2.5vw, 30px);
+    font-weight: 500;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.categoryAction {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #555;
+    font-size: 13px;
+}
+
+.status,
+.emptyState {
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #666;
+    text-align: center;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+.error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 36px 16px;
+    color: #b42318;
+    text-align: center;
+}
+
+.error button {
+    padding: 10px 18px;
+    border: 1px solid #111;
+    background: #111;
+    color: #fff;
+    cursor: pointer;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 800px) {
+    .categoryGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .page {
+        padding: 32px 16px 48px;
+    }
+
+    .hero {
+        margin-bottom: 32px;
+    }
+
+    .categoryGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .categoryCard {
+        min-height: 180px;
+        padding: 22px;
+    }
+}

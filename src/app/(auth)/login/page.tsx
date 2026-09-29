@@ -20,6 +20,7 @@ export default function UserLoginPage() {
       <div className={styles.formWrapper}>
         <div className={styles.brand}>
           <h2><Link href="/">HUGAN STORE</Link></h2>
+          <p>Đăng nhập để sử dụng các tính năng của Shop</p>
         </div>
         <div className={styles.card}>
           <form onSubmit={handleSubmit}>

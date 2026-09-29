@@ -1,26 +1,133 @@
 "use client";
 
+import { AxiosError } from "axios";
 import { productApi } from "@/lib/productApi";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import styles from "./page.module.css";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
+import { useNotification } from "@/stores/notificationStore";
+import { cartApi } from "@/lib/cartApi";
+import RecommendedProducts from "./RecomendedProducts";
+import type { CartItemResponse, CartResponse } from "@/types/cart";
+import { useAuthStore } from "@/stores/authStore";
+import {
+  addGuestCartItem,
+  calculateCartTotal,
+  createEmptyCart,
+  readGuestCart,
+} from "@/lib/guestCart";
+
+type AddToCartVariables = {
+  variantId: number;
+  quantity: number;
+  item: Omit<CartItemResponse, "id" | "subtotal">;
+  isAuthenticated: boolean;
+};
 
 export default function ProductDetail(){
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { addNotification } = useNotification();
+  const [showDescription, setShowDescription] = useState(false);
+  const queryClient = useQueryClient();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
+  const addToCartMutation = useMutation({
+    mutationFn: ({ variantId, quantity, isAuthenticated }: AddToCartVariables) =>
+      isAuthenticated
+        ? cartApi.addToCart({ variantId, quantity })
+        : Promise.resolve(),
+    onMutate: async ({
+      variantId,
+      quantity,
+      item,
+      isAuthenticated: authenticated,
+    }: AddToCartVariables) => {
+      if (!authenticated) {
+        const guestCart = addGuestCartItem(
+          readGuestCart(),
+          item,
+          quantity
+        );
+        queryClient.setQueryData(["guest-cart"], guestCart);
+        return { previousCart: undefined, isGuestCart: true as const };
+      }
+
+      await queryClient.cancelQueries({ queryKey: ["cart"] });
+
+      const previousCart = queryClient.getQueryData<CartResponse>(["cart"]);
+      const currentCart = previousCart ?? createEmptyCart();
+
+      const existingItem = currentCart.items.find(
+        (cartItem) => cartItem.variantId === variantId
+      );
+
+      const items = existingItem
+        ? currentCart.items.map((cartItem) =>
+            cartItem.variantId === variantId
+              ? {
+                  ...cartItem,
+                  quantity: Math.min(
+                    cartItem.stock,
+                    cartItem.quantity + quantity
+                  ),
+                  subtotal:
+                    Math.min(cartItem.stock, cartItem.quantity + quantity) *
+                    cartItem.price,
+                }
+              : cartItem
+          )
+        : [
+            ...currentCart.items,
+            {
+              ...item,
+              id: -variantId,
+              subtotal: item.price * quantity,
+            },
+          ];
+
+      queryClient.setQueryData<CartResponse>(["cart"], {
+        ...currentCart,
+        items,
+        total: calculateCartTotal(items),
+      });
+
+      return { previousCart, isGuestCart: false as const };
+    },
+    onError: (error, _variables, context) => {
+      if (!context?.isGuestCart) {
+        if (context?.previousCart) {
+          queryClient.setQueryData(["cart"], context.previousCart);
+        } else {
+          queryClient.removeQueries({ queryKey: ["cart"], exact: true });
+        }
+      }
+
+      if (!(error instanceof AxiosError && error.response?.status === 401)) {
+        addNotification("error", "Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.");
+      }
+    },
+    onSuccess: () => {
+      addNotification("success", "Đã thêm sản phẩm vào giỏ hàng.");
+    },
+    onSettled: (_data, _error, variables) => {
+      if (variables.isAuthenticated) {
+        void queryClient.invalidateQueries({ queryKey: ["cart"] });
+      }
+    },
+  });
+  // const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const params = useParams();
   const id = Number(params.id);
 
   const {
     data: product,
     isLoading,
-    isError,
-    error
+    isError
   } = useQuery({
     queryKey: ["product", id],
     queryFn: () => productApi.getById(id),
@@ -33,11 +140,11 @@ export default function ProductDetail(){
   ) => {
     if(!imageData) return "";
 
-    if(imageData.startsWith("data")) {
+    if(imageData.startsWith("data:") || imageData.startsWith("http")) {
       return imageData;
     }
 
-    return `data:${contentType};base64,${imageData}`;
+    return `data:${contentType || "image/jpeg"};base64,${imageData}`;
   }
   // Màu sản phẩm
   const colors = useMemo(() => {
@@ -75,33 +182,89 @@ export default function ProductDetail(){
   };
   // Tăng số lượng
   const increaseQuantity = () => {
-    if(!selectVariant) return;
+    if(!selectVariant || selectVariant.stock < 1) return;
 
     setQuantity((prev) => 
     Math.min(selectVariant.stock, prev + 1));
   };
 
   // Chuyển ảnh
-  const nextImage = () => {
-    const images = product?.images;
+  // const nextImage = () => {
+  //   const images = product?.images;
 
-    if (!images || images.length === 0) return;
+  //   if (!images || images.length === 0) return;
 
-    setCurrentImageIndex((prev) =>
-      prev === images.length - 1 ? 0 : prev + 1
-    );
-  };
+  //   setCurrentImageIndex((prev) =>
+  //     prev === images.length - 1 ? 0 : prev + 1
+  //   );
+  // };
 
-  const previousImage = () => {
-    const images = product?.images;
+  // const previousImage = () => {
+  //   const images = product?.images;
 
-    if (!images || images.length === 0) return;
+  //   if (!images || images.length === 0) return;
 
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? images.length - 1 : prev - 1
-    );
-  };
+  //   setCurrentImageIndex((prev) =>
+  //     prev === 0 ? images.length - 1 : prev - 1
+  //   );
+  // };
 
+  const handleAddToCart = () => {
+    if(!hasHydrated) {
+      addNotification("info", "Đang tải trạng thái tài khoản. Vui lòng thử lại.");
+      return;
+    }
+
+    if(!product || !selectVariant) {
+      addNotification("warning", "Vui lòng chọn màu và size");
+      return;
+    }
+
+    if (selectVariant.stock < 1 || quantity > selectVariant.stock) {
+      addNotification("warning", "Số lượng sản phẩm không còn đủ trong kho.");
+      return;
+    }
+
+    try {
+      const currentCart = isAuthenticated
+        ? queryClient.getQueryData<CartResponse>(["cart"]) ?? createEmptyCart()
+        : readGuestCart();
+      const existingQuantity =
+        currentCart.items.find(
+          (item) => item.variantId === selectVariant.id
+        )?.quantity ?? 0;
+      if (existingQuantity + quantity > selectVariant.stock) {
+        addNotification("warning", "Số lượng trong giỏ hàng đã đạt giới hạn tồn kho.");
+        return;
+      }
+    } catch {
+      addNotification("error", "Không thể đọc giỏ hàng. Vui lòng tải lại trang.");
+      return;
+    }
+
+    const firstImage =
+      product.images?.find((image) => image.isPrimary) ??
+      product.images?.[0];
+    const item: Omit<CartItemResponse, "id" | "subtotal"> = {
+      variantId: selectVariant.id,
+      productName: product.name,
+      size: selectVariant.size,
+      color: selectVariant.color,
+      imgUrl: selectVariant.imgUrl || (firstImage
+        ? getImageSrc(firstImage.imageData, firstImage.contentType)
+        : null),
+      price: selectVariant.price ?? product.price,
+      quantity,
+      stock: selectVariant.stock,
+    };
+
+    addToCartMutation.mutate({
+      variantId: selectVariant.id,
+      quantity,
+      item,
+      isAuthenticated,
+    });
+  }
   if(isLoading) return <div className={styles.isLoading}>Đang tải dữ liệu...</div>
 
   if(isError) return <div className={styles.isError}>Không thể tải dữ liệu!</div>
@@ -170,14 +333,34 @@ export default function ProductDetail(){
                   ? `Còn ${selectVariant.stock} sản phẩm`
                   : "Vui lòng chọn màu và size"}
               </span>
+
+              <button
+                onClick={handleAddToCart}
+                type="button"
+                className={styles.addToCart}
+                disabled={
+                  addToCartMutation.isPending ||
+                  (selectVariant !== null && selectVariant.stock < 1)
+                }
+                aria-busy={addToCartMutation.isPending}
+              >
+                {addToCartMutation.isPending ? "Đang thêm..." : "Thêm vào giỏ hàng"}
+              </button>
             </div>
           </div>
           
           <div className={styles.description}>
             <p><b>Mô tả:</b></p>
-            <p>{product.description}</p>
+            <p className={!showDescription ? styles.descriptionCollapsed : ""}>{product.description}</p>
+
+            <button type="button" onClick={() => setShowDescription((prev) => !prev)} className={styles.descriptionButton}>
+              {showDescription ? <div className={styles.chevron}><ChevronUp/> Thu gọn</div> : <div className={styles.chevron}><ChevronDown/>Xem thêm</div>}
+            </button>
           </div>
         </div>
+      </div>
+      <div className={styles.areaRecommend}>
+        <RecommendedProducts currentProductId={product.id}/>
       </div>
     </div>
   )

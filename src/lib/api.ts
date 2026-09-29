@@ -36,9 +36,12 @@ api.interceptors.response.use(
     // Token hết hạn / route protected
     if (status === 401 && typeof window !== "undefined") {
       localStorage.removeItem("token");
+
+      const currentPath = window.location.pathname + window.location.search;
+
       const redirectUrl = window.location.pathname.startsWith("/admin")
-        ? "/admin/login"
-        : "/login";
+        ? `/admin/login?redirect=${encodeURIComponent(currentPath)}`
+        : `/login?redirect=${encodeURIComponent(currentPath)}`;
 
       window.location.href = redirectUrl;
     }
