@@ -5,7 +5,7 @@ import { productApi } from "@/lib/productApi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import styles from "./page.module.css";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { useNotification } from "@/stores/notificationStore";
@@ -37,10 +37,16 @@ export default function ProductDetail(){
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const addToCartMutation = useMutation({
-    mutationFn: ({ variantId, quantity, isAuthenticated }: AddToCartVariables) =>
-      isAuthenticated
-        ? cartApi.addToCart({ variantId, quantity })
-        : Promise.resolve(),
+    mutationFn: async ({
+      variantId,
+      quantity,
+      isAuthenticated: authenticated,
+    }: AddToCartVariables): Promise<CartResponse | null> => {
+      if (!authenticated) {
+        return null;
+      }
+      return cartApi.addToCart({ variantId, quantity });
+    },
     onMutate: async ({
       variantId,
       quantity,
@@ -111,13 +117,25 @@ export default function ProductDetail(){
         addNotification("error", "Không thể thêm sản phẩm vào giỏ hàng. Vui lòng thử lại.");
       }
     },
-    onSuccess: () => {
-      addNotification("success", "Đã thêm sản phẩm vào giỏ hàng.");
-    },
-    onSettled: (_data, _error, variables) => {
-      if (variables.isAuthenticated) {
-        void queryClient.invalidateQueries({ queryKey: ["cart"] });
+    onSuccess: (updatedCart, variables) => {
+      if (updatedCart) {
+        const optimisticImage =
+          queryClient
+            .getQueryData<CartResponse>(["cart"])
+            ?.items.find((item) => item.variantId === variables.variantId)?.imgUrl ??
+          variables.item.imgUrl;
+        const items = updatedCart.items.map((item) =>
+          item.variantId === variables.variantId && !item.imgUrl
+            ? { ...item, imgUrl: optimisticImage }
+            : item
+        );
+        queryClient.setQueryData<CartResponse>(["cart"], {
+          ...updatedCart,
+          items,
+          total: calculateCartTotal(items),
+        });
       }
+      addNotification("success", "Đã thêm sản phẩm vào giỏ hàng.");
     },
   });
   // const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -172,10 +190,6 @@ export default function ProductDetail(){
       variant.size === selectedSize
     ) ?? null;
   }, [product?.variants, selectedColor, selectedSize]);
-  //Reset về 1
-  useEffect(() => {
-    setQuantity(1);
-  }, [selectVariant?.id]);
   // Giảm số lượng
   const decreaseQuantity = () => {
     setQuantity((prev) => Math.max(1, prev - 1));
@@ -306,7 +320,10 @@ export default function ProductDetail(){
           <div className={styles.optionGroups}>
             <div className={styles.options}>
               {colors.map((color) => (
-                <button key={color} type="button" onClick={() => setSelectedColor(color)}
+                <button key={color} type="button" onClick={() => {
+                  if (selectedColor !== color) setQuantity(1);
+                  setSelectedColor(color);
+                }}
                 className={selectedColor === color ? styles.selected : ""}>
                   {color}
                 </button>
@@ -315,7 +332,10 @@ export default function ProductDetail(){
 
             <div className={styles.options}>
               {sizes.map((size) => (
-                <button key={size} type="button" onClick={() => setSelectedSize(size)}
+                <button key={size} type="button" onClick={() => {
+                  if (selectedSize !== size) setQuantity(1);
+                  setSelectedSize(size);
+                }}
                 className={selectedSize === size ? styles.selected : ""}>
                   {size}
                 </button>

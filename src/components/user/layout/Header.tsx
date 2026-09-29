@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cartApi } from "@/lib/cartApi";
+import { productApi } from "@/lib/productApi";
 import { useNotification } from "@/stores/notificationStore";
 import {
     calculateCartTotal,
@@ -20,12 +21,62 @@ import {
     saveGuestCart,
     updateGuestCartItem,
 } from "@/lib/guestCart";
-import type { CartItemResponse } from "@/types/cart";
+import type { CartItemResponse, CartResponse } from "@/types/cart";
+import type { ProductResponse } from "@/types/product";
+
+interface PendingQuantityUpdate {
+    originalQuantity: number;
+    latestQuantity: number;
+    timer: ReturnType<typeof setTimeout> | null;
+    isSaving: boolean;
+}
+
+function CartItemThumbnail({ item }: { item: CartItemResponse }) {
+    const hasVariantImage = Boolean(getCartImageUrl(item.imgUrl));
+    const { data: product, isLoading: isLoadingProduct } = useQuery<ProductResponse | null>({
+        queryKey: ["cart-product-image", item.productName],
+        queryFn: async () => {
+            const matches = await productApi.getAll({
+                search: item.productName,
+                size: 1,
+            });
+            return matches.find((candidate) => candidate.name === item.productName) ?? null;
+        },
+        enabled: !hasVariantImage,
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const variantImage = product?.variants?.find(
+        (variant) => variant.id === item.variantId
+    )?.imgUrl;
+    const productImage =
+        product?.images?.find((image) => image.isPrimary) ?? product?.images?.[0];
+    const imageUrl =
+        getCartImageUrl(item.imgUrl) ??
+        getCartImageUrl(variantImage ?? null) ??
+        getCartImageUrl(productImage?.imageData ?? null) ??
+        getCartImageUrl(product?.imgUrl ?? null);
+
+    const [failedImage, setFailedImage] = useState<string | null>(null);
+
+    return imageUrl && failedImage !== imageUrl ? (
+        <img
+            src={imageUrl}
+            alt={item.productName}
+            onError={() => setFailedImage(imageUrl)}
+        />
+    ) : (
+        <div className={styles.cartImagePlaceholder} aria-label="Ảnh sản phẩm chưa có">
+            {isLoadingProduct ? "Đang tải ảnh..." : "Không có ảnh"}
+        </div>
+    );
+}
 
 const menuItems = [
     { href: '/', label: 'HOME'},
     { href: '/abouts', label: 'ABOUT' },
     { href: '/categories', label: 'CATEGORIES' },
+    { href: '/intros', label: 'INTRODUCE' },
 ]
 export default function HeaderUser() {
     const pathname = usePathname();
@@ -39,6 +90,10 @@ export default function HeaderUser() {
     const hasHydrated = useAuthStore((state) => state._hasHydrated);
     const addNotification = useNotification((state) => state.addNotification);
     const guestCartMergeInProgress = useRef(false);
+    const pendingQuantityUpdates = useRef(new Map<number, PendingQuantityUpdate>());
+    const [pendingQuantityItemIds, setPendingQuantityItemIds] = useState<Set<number>>(
+        () => new Set()
+    );
     const {
         data: accountCart,
         isLoading: isCartLoading,
@@ -117,42 +172,166 @@ export default function HeaderUser() {
         })();
     }, [addNotification, hasHydrated, isAuthenticated, queryClient]);
 
-    const updateCartMutation = useMutation({
-        mutationFn: ({
-            itemId,
-            quantity,
-        }: {
-            itemId: number;
-            quantity: number;
-        }) => cartApi.updateItem(itemId, quantity),
+    const removeCartMutation = useMutation<
+        CartResponse,
+        Error,
+        number,
+        { previousCart?: CartResponse }
+    >({
+        mutationFn: (itemId) => cartApi.removeItem(itemId),
+        onMutate: async (itemId) => {
+            await queryClient.cancelQueries({ queryKey: ["cart"] });
+            const previousCart = queryClient.getQueryData<CartResponse>(["cart"]);
 
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["cart"],
-            });
-        },
-        onError: () => {
-            addNotification("error", "Không thể cập nhật số lượng sản phẩm.");
-        },
-    });
+            if (previousCart) {
+                const items = previousCart.items.filter((item) => item.id !== itemId);
+                queryClient.setQueryData<CartResponse>(["cart"], {
+                    ...previousCart,
+                    items,
+                    total: calculateCartTotal(items),
+                });
+            }
 
-    const removeCartMutation = useMutation({
-        mutationFn: (itemId: number) =>
-            cartApi.removeItem(itemId),
-
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["cart"],
-            });
+            return { previousCart };
         },
-        onError: () => {
+        onSuccess: (updatedCart) => {
+            queryClient.setQueryData(["cart"], updatedCart);
+        },
+        onError: (_error, _itemId, context) => {
+            if (context?.previousCart) {
+                queryClient.setQueryData(["cart"], context.previousCart);
+            }
             addNotification("error", "Không thể xóa sản phẩm khỏi giỏ hàng.");
         },
     });
 
+    const flushQuantityUpdate = async (itemId: number) => {
+        const update = pendingQuantityUpdates.current.get(itemId);
+        if (!update || update.isSaving) {
+            return;
+        }
+
+        update.isSaving = true;
+        const quantityBeingSaved = update.latestQuantity;
+        let didSave = false;
+
+        try {
+            const updatedCart = await cartApi.updateItem(itemId, quantityBeingSaved);
+            const latestUpdate = pendingQuantityUpdates.current.get(itemId);
+
+            if (latestUpdate === update && latestUpdate.latestQuantity === quantityBeingSaved) {
+                queryClient.setQueryData(["cart"], updatedCart);
+                didSave = true;
+            }
+        } catch {
+            const latestUpdate = pendingQuantityUpdates.current.get(itemId);
+            if (latestUpdate === update && latestUpdate.latestQuantity === quantityBeingSaved) {
+                queryClient.setQueryData<CartResponse>(["cart"], (currentCart) => {
+                    if (!currentCart) {
+                        return currentCart;
+                    }
+                    const items = currentCart.items.map((item) =>
+                        item.id === itemId
+                            ? {
+                                  ...item,
+                                  quantity: update.originalQuantity,
+                                  subtotal: Number(item.price) * update.originalQuantity,
+                              }
+                            : item
+                    );
+                    return { ...currentCart, items, total: calculateCartTotal(items) };
+                });
+                pendingQuantityUpdates.current.delete(itemId);
+                setPendingQuantityItemIds((current) => {
+                    const next = new Set(current);
+                    next.delete(itemId);
+                    return next;
+                });
+                addNotification("error", "Không thể cập nhật số lượng sản phẩm.");
+            }
+        } finally {
+            update.isSaving = false;
+            const latestUpdate = pendingQuantityUpdates.current.get(itemId);
+
+            if (latestUpdate === update) {
+                if (latestUpdate.latestQuantity !== quantityBeingSaved) {
+                    void flushQuantityUpdate(itemId);
+                } else if (didSave) {
+                    pendingQuantityUpdates.current.delete(itemId);
+                    setPendingQuantityItemIds((current) => {
+                        const next = new Set(current);
+                        next.delete(itemId);
+                        return next;
+                    });
+                }
+            }
+        }
+    };
+
+    const queueQuantityUpdate = (itemId: number, quantity: number) => {
+        const cartToUpdate = queryClient.getQueryData<CartResponse>(["cart"]);
+        const cartItem = cartToUpdate?.items.find((item) => item.id === itemId);
+        if (!cartToUpdate || !cartItem) {
+            return;
+        }
+
+        const nextQuantity = Math.min(cartItem.stock, Math.max(1, quantity));
+        if (nextQuantity === cartItem.quantity) {
+            return;
+        }
+
+        const items = cartToUpdate.items.map((item) =>
+            item.id === itemId
+                ? {
+                      ...item,
+                      quantity: nextQuantity,
+                      subtotal: Number(item.price) * nextQuantity,
+                  }
+                : item
+        );
+        queryClient.setQueryData<CartResponse>(["cart"], {
+            ...cartToUpdate,
+            items,
+            total: calculateCartTotal(items),
+        });
+
+        let update = pendingQuantityUpdates.current.get(itemId);
+        if (!update) {
+            update = {
+                originalQuantity: cartItem.quantity,
+                latestQuantity: nextQuantity,
+                timer: null,
+                isSaving: false,
+            };
+            pendingQuantityUpdates.current.set(itemId, update);
+        } else {
+            update.latestQuantity = nextQuantity;
+        }
+
+        if (update.timer) {
+            clearTimeout(update.timer);
+        }
+        setPendingQuantityItemIds((current) => new Set(current).add(itemId));
+        update.timer = setTimeout(() => {
+            update!.timer = null;
+            void flushQuantityUpdate(itemId);
+        }, 250);
+    };
+
+    useEffect(
+        () => () => {
+            pendingQuantityUpdates.current.forEach((update) => {
+                if (update.timer) {
+                    clearTimeout(update.timer);
+                }
+            });
+        },
+        []
+    );
+
     const changeItemQuantity = (itemId: number, quantity: number) => {
         if (isAuthenticated) {
-            updateCartMutation.mutate({ itemId, quantity });
+            queueQuantityUpdate(itemId, quantity);
             return;
         }
 
@@ -277,16 +456,7 @@ export default function HeaderUser() {
 
                                                             {/* Ảnh */}
                                                             <div className={styles.cartItemImage}>
-                                                                {getCartImageUrl(item.imgUrl) ? (
-                                                                    <img
-                                                                        src={getCartImageUrl(item.imgUrl) ?? ""}
-                                                                        alt={item.productName}
-                                                                    />
-                                                                ) : (
-                                                                    <div>
-                                                                        No image
-                                                                    </div>
-                                                                )}
+                                                                <CartItemThumbnail item={item} />
                                                             </div>
 
                                                             {/* Thông tin */}
@@ -316,7 +486,8 @@ export default function HeaderUser() {
                                                                             type="button"
                                                                             disabled={
                                                                                 (isAuthenticated && item.id < 0) ||
-                                                                                item.quantity <= 1
+                                                                                item.quantity <= 1 ||
+                                                                                removeCartMutation.isPending
                                                                             }
                                                                             onClick={() =>
                                                                                 changeItemQuantity(item.id, item.quantity - 1)
@@ -333,7 +504,8 @@ export default function HeaderUser() {
                                                                             type="button"
                                                                             disabled={
                                                                                 (isAuthenticated && item.id < 0) ||
-                                                                                item.quantity >= item.stock
+                                                                                item.quantity >= item.stock ||
+                                                                                removeCartMutation.isPending
                                                                             }
                                                                             onClick={() =>
                                                                                 changeItemQuantity(item.id, item.quantity + 1)
@@ -347,7 +519,11 @@ export default function HeaderUser() {
                                                                     <button
                                                                         type="button"
                                                                         className={styles.removeItem}
-                                                                        disabled={isAuthenticated && item.id < 0}
+                                                                        disabled={
+                                                                            (isAuthenticated && item.id < 0) ||
+                                                                            pendingQuantityItemIds.has(item.id) ||
+                                                                            removeCartMutation.isPending
+                                                                        }
                                                                         onClick={() => removeItem(item.id)}
                                                                     >
                                                                         <Trash2 />

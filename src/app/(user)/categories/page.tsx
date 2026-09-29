@@ -50,10 +50,7 @@ export default function CategoriesPage() {
     return (
         <section className={styles.page}>
             <div className={styles.hero}>
-                <h1>Danh mục sản phẩm</h1>
-                <p className={styles.description}>
-                    Khám phá bộ sưu tập theo danh mục phù hợp với phong cách của bạn.
-                </p>
+                <h1>CATEGORIES</h1>
             </div>
 
             {loading ? (
@@ -80,9 +77,9 @@ export default function CategoriesPage() {
                             href={`/products?categoryId=${category.id}`}
                             key={category.id}
                         >
-                            <span className={styles.categoryNumber}>
+                            {/* <span className={styles.categoryNumber}>
                                 {String(index + 1).padStart(2, "0")}
-                            </span>
+                            </span> */}
                             <span className={styles.categoryName}>{category.name}</span>
                             <span className={styles.categoryAction}>
                                 Khám phá sản phẩm

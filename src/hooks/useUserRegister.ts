@@ -1,5 +1,6 @@
 "use client";
 
+import { AxiosError } from "axios";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -27,6 +28,8 @@ export function useUserRegister() {
   }, []);
 
   const validate = useCallback((payload: RegisterRequest) => {
+    const phone = payload.phone ?? "";
+
     if (!payload.email.trim()) {
       return "Email không được để trống.";
     }
@@ -35,7 +38,7 @@ export function useUserRegister() {
       return "Họ tên không được để trống.";
     }
 
-    if (!payload.phone.trim()) {
+    if (!phone.trim()) {
       return "Số điện thoại không được để trống.";
     }
 
@@ -49,7 +52,7 @@ export function useUserRegister() {
     }
 
     const phoneRegex = /^(0|\+84)[0-9]{9,10}$/;
-    if (!phoneRegex.test(payload.phone)) {
+    if (!phoneRegex.test(phone)) {
       return "Số điện thoại không hợp lệ.";
     }
 
@@ -82,12 +85,25 @@ export function useUserRegister() {
         });
 
         router.push("/login");
-      } catch (error: any) {
-        const message =
-          error?.response?.data?.message ||
-          error?.response?.data ||
-          error?.message ||
-          "Đăng ký thất bại!";
+      } catch (error: unknown) {
+        let message = "Đăng ký thất bại!";
+        if (error instanceof AxiosError) {
+          const responseData: unknown = error.response?.data;
+          if (typeof responseData === "string" && responseData.trim()) {
+            message = responseData;
+          } else if (
+            responseData &&
+            typeof responseData === "object" &&
+            "message" in responseData &&
+            typeof responseData.message === "string"
+          ) {
+            message = responseData.message;
+          } else if (error.message) {
+            message = error.message;
+          }
+        } else if (error instanceof Error) {
+          message = error.message;
+        }
 
         addNotification("error", message);
       } finally {

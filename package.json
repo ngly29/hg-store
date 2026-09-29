@@ -17,6 +17,7 @@
     "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "vietnam-divisions-js": "^3.0.0",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
